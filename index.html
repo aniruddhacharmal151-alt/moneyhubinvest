@@ -1,0 +1,1756 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Investment Platform</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="/_sdk/data_sdk.js"></script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Arial', sans-serif; }
+    
+    @keyframes pulse-banner {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    
+    .banner-animate {
+      animation: pulse-banner 2s ease-in-out infinite;
+    }
+    
+    .float-animation {
+      animation: float 3s ease-in-out infinite;
+    }
+    
+    .modal-backdrop {
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+    }
+    
+    .input-focus:focus {
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
+    }
+    
+    .payment-option {
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+    }
+    
+    .payment-option:hover, .payment-option.selected {
+      border-color: #22c55e;
+      background: rgba(34, 197, 94, 0.1);
+    }
+    
+    .slot-card {
+      transition: all 0.3s ease;
+    }
+    
+    .slot-card:hover {
+      transform: translateY(-4px);
+    }
+    
+    .table-row:hover {
+      background: rgba(34, 197, 94, 0.05);
+    }
+    
+    .copy-button {
+      transition: all 0.2s ease;
+    }
+    
+    .copy-button:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body class="h-full bg-white text-gray-800 overflow-auto">
+  <div id="app" class="min-h-full w-full">
+    
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <div class="flex items-center gap-2">
+            <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold text-lg">💰</div>
+            <span class="text-xl font-bold text-green-600">InvestHub</span>
+          </div>
+          
+          <!-- Desktop Nav -->
+          <div class="hidden lg:flex items-center gap-8">
+            <a href="#offers" class="text-gray-600 hover:text-green-600 font-medium transition">Special Offers</a>
+            <a href="#slots" class="text-gray-600 hover:text-green-600 font-medium transition">Investment Slots</a>
+            <a href="#how" class="text-gray-600 hover:text-green-600 font-medium transition">How It Works</a>
+          </div>
+          
+          <!-- Auth Buttons -->
+          <div id="auth-buttons" class="flex items-center gap-3">
+            <button onclick="openModal('login')" class="px-4 py-2 text-green-600 font-medium hover:text-green-700 transition">Login</button>
+            <button onclick="openModal('signup')" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Sign Up</button>
+          </div>
+          <div id="user-menu" class="hidden items-center gap-3">
+            <button onclick="openModal('deposit')" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Deposit</button>
+            <button onclick="openModal('withdraw')" class="px-3 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition">Withdraw</button>
+            <div class="relative">
+              <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
+                <span class="text-sm text-gray-600">👤</span>
+                <span id="user-balance" class="text-green-600 font-bold text-sm">₹0</span>
+              </button>
+              <div id="user-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
+                <button onclick="showSection('transactions')" class="w-full px-4 py-3 text-left text-gray-600 hover:bg-green-50 hover:text-green-600 transition">📊 Transaction History</button>
+                <button onclick="showSection('referral')" class="w-full px-4 py-3 text-left text-gray-600 hover:bg-green-50 hover:text-green-600 transition">🎁 Referral Program</button>
+                <button onclick="logout()" class="w-full px-4 py-3 text-left text-gray-600 hover:bg-red-50 hover:text-red-600 transition">🚪 Logout</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <main id="main-content" class="pt-0">
+      
+      <!-- Splashing Offer Banner -->
+      <section id="offers" class="bg-gradient-to-r from-orange-500 to-red-500 py-12 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center text-white banner-animate">
+            <div class="text-lg font-bold mb-2">🔥 LIMITED TIME OFFER 🔥</div>
+            <div class="text-4xl md:text-5xl font-bold mb-4">Deposit ₹15,000 → Get ₹30,000</div>
+            <div class="text-xl md:text-2xl mb-4">Invest for just 65 Days</div>
+            <div class="text-lg">Returns: 100% Profit | Time Period: 65 Days</div>
+            <button onclick="checkAuthAndDeposit(15000)" class="mt-6 px-8 py-3 bg-white text-red-600 font-bold rounded-lg hover:bg-gray-100 transition text-lg">
+              Start Now
+            </button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Investment Slots Section -->
+      <section id="slots" class="py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Investment Slots</h2>
+            <p class="text-gray-600 text-lg">Choose your investment amount and duration</p>
+          </div>
+          
+          <!-- Slots Grid - Compact -->
+          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
+            <!-- Bronze: 2K-6K, 30 Days -->
+            <div class="slot-card bg-white border-2 border-gray-300 rounded-lg p-3">
+              <div class="text-center mb-2">
+                <span class="text-3xl">🥉</span>
+                <h3 class="text-sm font-bold text-gray-800 mt-1">Bronze</h3>
+              </div>
+              <div class="bg-gray-100 rounded p-2 mb-2 text-center">
+                <p class="text-gray-600 text-xs">Amount</p>
+                <p class="text-base font-bold text-gray-800">₹2K-6K</p>
+                <p class="text-green-600 font-bold text-xs mt-1">30 Days</p>
+              </div>
+              <button onclick="checkAuthAndDeposit(2000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
+            </div>
+            
+            <!-- Silver: 5K-9K, 45 Days -->
+            <div class="slot-card bg-white border-2 border-gray-300 rounded-lg p-3">
+              <div class="text-center mb-2">
+                <span class="text-3xl">🥈</span>
+                <h3 class="text-sm font-bold text-gray-800 mt-1">Silver</h3>
+              </div>
+              <div class="bg-gray-100 rounded p-2 mb-2 text-center">
+                <p class="text-gray-600 text-xs">Amount</p>
+                <p class="text-base font-bold text-gray-800">₹5K-9K</p>
+                <p class="text-green-600 font-bold text-xs mt-1">45 Days</p>
+              </div>
+              <button onclick="checkAuthAndDeposit(5000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
+            </div>
+            
+            <!-- Gold: 10K-20K, 65 Days -->
+            <div class="slot-card bg-white border-2 border-yellow-400 rounded-lg p-3">
+              <div class="text-center mb-2">
+                <span class="text-3xl">🥇</span>
+                <h3 class="text-sm font-bold text-gray-800 mt-1">Gold</h3>
+                <span class="inline-block bg-yellow-400 text-gray-800 px-2 py-0.5 rounded-full text-xs font-bold mt-1">Popular</span>
+              </div>
+              <div class="bg-yellow-50 rounded p-2 mb-2 text-center">
+                <p class="text-gray-600 text-xs">Amount</p>
+                <p class="text-base font-bold text-gray-800">₹10K-20K</p>
+                <p class="text-green-600 font-bold text-xs mt-1">65 Days</p>
+              </div>
+              <button onclick="checkAuthAndDeposit(10000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
+            </div>
+            
+            <!-- Emerald: 12K-23K, 75 Days -->
+            <div class="slot-card bg-white border-2 border-green-400 rounded-lg p-3">
+              <div class="text-center mb-2">
+                <span class="text-3xl">💚</span>
+                <h3 class="text-sm font-bold text-gray-800 mt-1">Emerald</h3>
+              </div>
+              <div class="bg-green-50 rounded p-2 mb-2 text-center">
+                <p class="text-gray-600 text-xs">Amount</p>
+                <p class="text-base font-bold text-gray-800">₹12K-23K</p>
+                <p class="text-green-600 font-bold text-xs mt-1">75 Days</p>
+              </div>
+              <button onclick="checkAuthAndDeposit(12000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
+            </div>
+            
+            <!-- Sapphire: 30K-60K, 160 Days -->
+            <div class="slot-card bg-white border-2 border-blue-400 rounded-lg p-3">
+              <div class="text-center mb-2">
+                <span class="text-3xl">💙</span>
+                <h3 class="text-sm font-bold text-gray-800 mt-1">Sapphire</h3>
+              </div>
+              <div class="bg-blue-50 rounded p-2 mb-2 text-center">
+                <p class="text-gray-600 text-xs">Amount</p>
+                <p class="text-base font-bold text-gray-800">₹30K-60K</p>
+                <p class="text-green-600 font-bold text-xs mt-1">160 Days</p>
+              </div>
+              <button onclick="checkAuthAndDeposit(30000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
+            </div>
+            
+            <!-- Diamond: 40K-75K, 230 Days -->
+            <div class="slot-card bg-white border-2 border-cyan-400 rounded-lg p-3">
+              <div class="text-center mb-2">
+                <span class="text-3xl">💎</span>
+                <h3 class="text-sm font-bold text-gray-800 mt-1">Diamond</h3>
+                <span class="inline-block bg-cyan-400 text-white px-2 py-0.5 rounded-full text-xs font-bold mt-1">Premium</span>
+              </div>
+              <div class="bg-cyan-50 rounded p-2 mb-2 text-center">
+                <p class="text-gray-600 text-xs">Amount</p>
+                <p class="text-base font-bold text-gray-800">₹40K-75K</p>
+                <p class="text-green-600 font-bold text-xs mt-1">230 Days</p>
+              </div>
+              <button onclick="checkAuthAndDeposit(40000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- How It Works -->
+      <section id="how" class="bg-gray-50 py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-800">How It Works</h2>
+          </div>
+          
+          <div class="grid md:grid-cols-4 gap-8">
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">1️⃣</div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">Sign Up</h3>
+              <p class="text-gray-600">Create your account with email or phone number</p>
+            </div>
+            
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">2️⃣</div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">Deposit</h3>
+              <p class="text-gray-600">Add funds using secure payment methods</p>
+            </div>
+            
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">3️⃣</div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">Choose Slot</h3>
+              <p class="text-gray-600">Select your investment slot and duration</p>
+            </div>
+            
+            <div class="text-center">
+              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">4️⃣</div>
+              <h3 class="text-xl font-bold text-gray-800 mb-2">Earn & Withdraw</h3>
+              <p class="text-gray-600">Complete your investment cycle and withdraw</p>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Transaction History Section -->
+      <section id="transactions-section" class="hidden py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">Transaction History</h2>
+            <button onclick="hideTransactions()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">← Back Home</button>
+          </div>
+          
+          <!-- Filters -->
+          <div class="flex flex-wrap gap-3 mb-6">
+            <select id="filter-type" onchange="filterTransactions()" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none">
+              <option value="all">All Types</option>
+              <option value="deposit">Deposits</option>
+              <option value="withdrawal">Withdrawals</option>
+              <option value="investment">Investments</option>
+            </select>
+            <select id="filter-status" onchange="filterTransactions()" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none">
+              <option value="all">All Status</option>
+              <option value="completed">Completed</option>
+              <option value="pending">Pending</option>
+              <option value="failed">Failed</option>
+            </select>
+            <select id="filter-sort" onchange="filterTransactions()" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="amount-high">Amount: High to Low</option>
+              <option value="amount-low">Amount: Low to High</option>
+            </select>
+          </div>
+          
+          <!-- Transactions Table -->
+          <div class="overflow-x-auto bg-white rounded-lg border border-gray-200">
+            <table class="w-full">
+              <thead class="bg-gray-100 border-b border-gray-200">
+                <tr>
+                  <th class="px-6 py-4 text-left font-bold text-gray-800">Date & Time</th>
+                  <th class="px-6 py-4 text-left font-bold text-gray-800">Type</th>
+                  <th class="px-6 py-4 text-left font-bold text-gray-800">Details</th>
+                  <th class="px-6 py-4 text-left font-bold text-gray-800">Amount</th>
+                  <th class="px-6 py-4 text-left font-bold text-gray-800">Status</th>
+                </tr>
+              </thead>
+              <tbody id="transactions-table" class="divide-y divide-gray-200">
+                <tr>
+                  <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+                    <div class="flex flex-col items-center gap-2">
+                      <span class="text-4xl">📊</span>
+                      <p>No transactions yet</p>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Referral Program Section -->
+      <section id="referral-section" class="hidden py-16 px-4">
+        <div class="max-w-7xl mx-auto">
+          <div class="flex items-center justify-between mb-8">
+            <h2 class="text-3xl font-bold text-gray-800">🎁 Referral Program</h2>
+            <button onclick="hideReferral()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">← Back Home</button>
+          </div>
+          
+          <!-- Referral Stats -->
+          <div class="grid md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-300">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-600 text-sm font-medium">Your Referral Code</p>
+                  <p id="referral-code" class="text-2xl font-bold text-green-600 mt-2">—</p>
+                </div>
+                <span class="text-4xl">🔗</span>
+              </div>
+              <button onclick="copyReferralCode()" class="w-full mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition copy-button font-medium">Copy Code</button>
+            </div>
+            
+            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-300">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-600 text-sm font-medium">Total Referrals</p>
+                  <p id="total-referrals" class="text-2xl font-bold text-blue-600 mt-2">0</p>
+                </div>
+                <span class="text-4xl">👥</span>
+              </div>
+              <p class="text-blue-600 text-xs font-medium mt-4">Friends who joined</p>
+            </div>
+            
+            <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 border border-orange-300">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="text-gray-600 text-sm font-medium">Referral Earnings</p>
+                  <p id="referral-earnings" class="text-2xl font-bold text-orange-600 mt-2">₹0</p>
+                </div>
+                <span class="text-4xl">💸</span>
+              </div>
+              <p class="text-orange-600 text-xs font-medium mt-4">₹50 per referral</p>
+            </div>
+          </div>
+          
+          <!-- How It Works -->
+          <div class="bg-blue-50 rounded-lg p-6 border border-blue-300 mb-8">
+            <h3 class="text-xl font-bold text-gray-800 mb-4">How Referral Program Works</h3>
+            <div class="space-y-3">
+              <div class="flex gap-4">
+                <span class="text-2xl">1️⃣</span>
+                <p class="text-gray-700"><span class="font-bold">Share Your Code</span> - Copy your unique referral code and share it with friends</p>
+              </div>
+              <div class="flex gap-4">
+                <span class="text-2xl">2️⃣</span>
+                <p class="text-gray-700"><span class="font-bold">Friend Signs Up</span> - Your friend uses your referral code during registration</p>
+              </div>
+              <div class="flex gap-4">
+                <span class="text-2xl">3️⃣</span>
+                <p class="text-gray-700"><span class="font-bold">First Deposit</span> - Your friend makes their first deposit of ₹2,000 or more</p>
+              </div>
+              <div class="flex gap-4">
+                <span class="text-2xl">4️⃣</span>
+                <p class="text-gray-700"><span class="font-bold">Earn ₹50</span> - You instantly earn ₹50 bonus for each successful referral</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Referral List -->
+          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div class="bg-gray-100 border-b border-gray-200 px-6 py-4">
+              <h3 class="text-lg font-bold text-gray-800">Your Referrals</h3>
+            </div>
+            <div id="referral-list" class="divide-y divide-gray-200">
+              <div class="px-6 py-12 text-center text-gray-400">
+                <div class="flex flex-col items-center gap-2">
+                  <span class="text-4xl">👫</span>
+                  <p>No referrals yet. Share your code to earn!</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 px-4 mt-16">
+      <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 mb-8">
+        <div>
+          <div class="flex items-center gap-2 mb-4">
+            <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center font-bold">💰</div>
+            <span class="text-xl font-bold">InvestHub</span>
+          </div>
+          <p class="text-gray-400 text-sm">Secure investment platform for your future</p>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Quick Links</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li><a href="#slots" class="hover:text-white transition">Investment Slots</a></li>
+            <li><a href="#how" class="hover:text-white transition">How It Works</a></li>
+            <li><button onclick="openModal('terms')" class="hover:text-white transition">Terms & Conditions</button></li>
+            <li><button onclick="openModal('privacy')" class="hover:text-white transition">Privacy Policy</button></li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Support</h4>
+          <ul class="space-y-2 text-sm text-gray-400">
+            <li>📧 support@investhub.com</li>
+            <li>📞 +91 9876543210</li>
+            <li>🕐 24/7 Support</li>
+          </ul>
+        </div>
+        
+        <div>
+          <h4 class="font-bold mb-4">Payment Partners</h4>
+          <div class="flex gap-3 text-2xl">
+            <span title="PhonePe">📱</span>
+            <span title="Google Pay">💳</span>
+            <span title="Paytm">💰</span>
+            <span title="Bank Transfer">🏦</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="border-t border-gray-700 pt-8">
+        <p class="text-center text-gray-400 text-sm">© 2024 InvestHub. All rights reserved.</p>
+      </div>
+    </footer>
+    
+    <!-- Modals -->
+    <div id="modals">
+      
+      <!-- Login Modal -->
+      <div id="login-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg w-full max-w-md max-h-[90%] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-gray-800">Login</h3>
+              <button onclick="closeModal('login')" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-6">
+              <button onclick="switchLoginTab('email')" id="login-tab-email" class="flex-1 py-2 px-4 rounded-lg font-medium bg-green-100 text-green-600">Email</button>
+              <button onclick="switchLoginTab('phone')" id="login-tab-phone" class="flex-1 py-2 px-4 rounded-lg font-medium text-gray-400 hover:text-gray-600">Mobile</button>
+            </div>
+            
+            <!-- Email Login -->
+            <form id="login-email-form" onsubmit="handleEmailLogin(event)" class="space-y-4">
+              <div>
+                <label for="login-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="login-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Enter your email">
+              </div>
+              <div>
+                <label for="login-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="login-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Enter your password">
+              </div>
+              <div id="login-email-error" class="hidden text-red-600 text-sm"></div>
+              <button type="submit" id="login-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Login</button>
+            </form>
+            
+            <!-- Phone Login -->
+            <form id="login-phone-form" onsubmit="handlePhoneLogin(event)" class="hidden space-y-4">
+              <div>
+                <label for="login-phone" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <div class="flex">
+                  <span class="px-4 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600">+91</span>
+                  <input type="tel" id="login-phone" required pattern="[0-9]{10}" class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:border-green-500 outline-none input-focus transition" placeholder="10-digit number">
+                </div>
+              </div>
+              <div id="login-otp-section" class="hidden">
+                <label for="login-otp" class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
+                <input type="text" id="login-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
+              </div>
+              <div id="login-phone-error" class="hidden text-red-600 text-sm"></div>
+              <button type="submit" id="login-phone-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Send OTP</button>
+            </form>
+            
+            <div class="mt-6 text-center">
+              <p class="text-gray-600 text-sm">Don't have an account? <button onclick="switchModal('login', 'signup')" class="text-green-600 hover:underline font-medium">Sign Up</button></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Signup Modal -->
+      <div id="signup-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg w-full max-w-md max-h-[90%] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-gray-800">Sign Up</h3>
+              <button onclick="closeModal('signup')" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex gap-2 mb-6">
+              <button onclick="switchSignupTab('email')" id="signup-tab-email" class="flex-1 py-2 px-4 rounded-lg font-medium bg-green-100 text-green-600">Email</button>
+              <button onclick="switchSignupTab('phone')" id="signup-tab-phone" class="flex-1 py-2 px-4 rounded-lg font-medium text-gray-400 hover:text-gray-600">Mobile</button>
+            </div>
+            
+            <!-- Referral Code Input -->
+            <div class="mb-4">
+              <label for="signup-referral" class="block text-sm font-medium text-gray-700 mb-1">Referral Code (Optional)</label>
+              <input type="text" id="signup-referral" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Enter referral code if you have one">
+            </div>
+            
+            <!-- Email Signup -->
+            <form id="signup-email-form" onsubmit="handleEmailSignup(event)" class="space-y-4">
+              <div>
+                <label for="signup-email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                <input type="email" id="signup-email" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Enter your email">
+              </div>
+              <div>
+                <label for="signup-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                <input type="password" id="signup-password" required minlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Min 6 characters">
+              </div>
+              <div>
+                <label for="signup-confirm" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                <input type="password" id="signup-confirm" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Confirm password">
+              </div>
+              <div id="signup-otp-email-section" class="hidden">
+                <label for="signup-email-otp" class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
+                <input type="text" id="signup-email-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
+              </div>
+              <div id="signup-email-error" class="hidden text-red-600 text-sm"></div>
+              <button type="submit" id="signup-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Sign Up</button>
+            </form>
+            
+            <!-- Phone Signup -->
+            <form id="signup-phone-form" onsubmit="handlePhoneSignup(event)" class="hidden space-y-4">
+              <div>
+                <label for="signup-phone" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <div class="flex">
+                  <span class="px-4 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600">+91</span>
+                  <input type="tel" id="signup-phone" required pattern="[0-9]{10}" class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:border-green-500 outline-none input-focus transition" placeholder="10-digit number">
+                </div>
+              </div>
+              <div id="signup-otp-phone-section" class="hidden">
+                <label for="signup-phone-otp" class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
+                <input type="text" id="signup-phone-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
+              </div>
+              <div id="signup-phone-error" class="hidden text-red-600 text-sm"></div>
+              <button type="submit" id="signup-phone-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Send OTP</button>
+            </form>
+            
+            <div class="mt-6 text-center">
+              <p class="text-gray-600 text-sm">Already have an account? <button onclick="switchModal('signup', 'login')" class="text-green-600 hover:underline font-medium">Login</button></p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Deposit Modal -->
+      <div id="deposit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg w-full max-w-md max-h-[90%] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-green-600">Deposit Funds</h3>
+              <button onclick="closeModal('deposit')" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <form id="deposit-form" onsubmit="handleDeposit(event)" class="space-y-6">
+              <!-- Custom Amount Input -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
+                <input type="number" id="deposit-amount" required min="2000" step="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-lg font-bold" placeholder="Minimum ₹2,000">
+                <p class="text-gray-500 text-xs mt-1">Minimum: ₹2,000</p>
+              </div>
+              
+              <!-- Quick Select -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Quick Select</label>
+                <div class="grid grid-cols-4 gap-2">
+                  <button type="button" onclick="setDepositAmount(2000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹2K</button>
+                  <button type="button" onclick="setDepositAmount(5000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹5K</button>
+                  <button type="button" onclick="setDepositAmount(10000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹10K</button>
+                  <button type="button" onclick="setDepositAmount(15000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹15K</button>
+                </div>
+              </div>
+              
+              <!-- Payment Methods -->
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                <div class="grid grid-cols-2 gap-3">
+                  <button type="button" onclick="selectPaymentMethod('phonepe')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
+                    <span class="text-2xl">📱</span>
+                    <span class="text-xs font-medium text-gray-600">PhonePe</span>
+                  </button>
+                  <button type="button" onclick="selectPaymentMethod('gpay')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
+                    <span class="text-2xl">💳</span>
+                    <span class="text-xs font-medium text-gray-600">Google Pay</span>
+                  </button>
+                  <button type="button" onclick="selectPaymentMethod('paytm')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
+                    <span class="text-2xl">💰</span>
+                    <span class="text-xs font-medium text-gray-600">Paytm</span>
+                  </button>
+                  <button type="button" onclick="selectPaymentMethod('bank')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
+                    <span class="text-2xl">🏦</span>
+                    <span class="text-xs font-medium text-gray-600">Bank</span>
+                  </button>
+                </div>
+                <input type="hidden" id="deposit-method" required>
+              </div>
+              
+              <div id="deposit-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded"></div>
+              <div id="deposit-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded"></div>
+              
+              <button type="submit" id="deposit-btn" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">Deposit Now</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Withdraw Modal -->
+      <div id="withdraw-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg w-full max-w-md max-h-[90%] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-green-600">Withdraw Funds</h3>
+              <button onclick="closeModal('withdraw')" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="bg-green-50 rounded-lg p-4 mb-6">
+              <p class="text-gray-600 text-sm">Available Balance</p>
+              <p id="withdraw-balance" class="text-3xl font-bold text-green-600">₹0</p>
+            </div>
+            
+            <form id="withdraw-form" onsubmit="handleWithdraw(event)" class="space-y-4">
+              <div>
+                <label for="withdraw-amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
+                <input type="number" id="withdraw-amount" required min="1000" step="100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-lg font-bold" placeholder="Minimum ₹1,000">
+              </div>
+              
+              <div>
+                <label for="withdraw-upi" class="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
+                <input type="text" id="withdraw-upi" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="yourname@upi">
+              </div>
+              
+              <div id="withdraw-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded"></div>
+              <div id="withdraw-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded"></div>
+              
+              <button type="submit" id="withdraw-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Withdraw Now</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Terms & Conditions Modal -->
+      <div id="terms-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90%] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-gray-800">Terms & Conditions</h3>
+              <button onclick="closeModal('terms')" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
+              <h4 class="text-lg font-bold text-gray-800">1. Investment Disclaimer</h4>
+              <p class="text-red-600 font-bold">⚠️ IMPORTANT: All investments carry substantial risk. Past performance is not indicative of future results. InvestHub does NOT guarantee any returns on investments. You may lose some or all of your investment.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">2. No Guaranteed Returns</h4>
+              <p>The investment slots and returns displayed are for illustration purposes only. These should not be considered as promises or guarantees of actual returns. Market conditions, economic factors, and unforeseen events may affect investment outcomes.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">3. Investment Conditions</h4>
+              <ul class="list-disc pl-5 space-y-1">
+                <li>Minimum investment amount is ₹2,000</li>
+                <li>Maximum investment amount is ₹75,000 per slot</li>
+                <li>Investment periods range from 30 to 230 days</li>
+                <li>Early withdrawal may incur penalties</li>
+                <li>All investments are subject to verification</li>
+              </ul>
+              
+              <h4 class="text-lg font-bold text-gray-800">4. User Responsibilities</h4>
+              <p>You are solely responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify InvestHub immediately of any unauthorized access.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">5. Prohibited Activities</h4>
+              <p>Users agree not to engage in money laundering, fraud, or any illegal activities. InvestHub reserves the right to suspend or terminate accounts involved in suspicious activities.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">6. Fees and Charges</h4>
+              <p>InvestHub may charge processing fees and other charges as disclosed during the transaction. These fees will be clearly communicated before you complete any transaction.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">7. Modification of Terms</h4>
+              <p>InvestHub reserves the right to modify these terms at any time. Continued use of the platform constitutes acceptance of updated terms.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">8. Governing Law</h4>
+              <p>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of Indian courts.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Privacy Policy Modal -->
+      <div id="privacy-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90%] overflow-y-auto">
+          <div class="p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="text-2xl font-bold text-gray-800">Privacy Policy</h3>
+              <button onclick="closeModal('privacy')" class="text-gray-400 hover:text-gray-600 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+            
+            <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
+              <p><strong>Last Updated:</strong> January 2024</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">1. Information We Collect</h4>
+              <p>We collect information you provide directly to us, including your name, email address, phone number, payment information, and account credentials. We also automatically collect information about your device and how you interact with our platform.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">2. How We Use Your Information</h4>
+              <p>We use the information we collect to:</p>
+              <ul class="list-disc pl-5 space-y-1">
+                <li>Process your deposits, withdrawals, and investments</li>
+                <li>Verify your identity and prevent fraud</li>
+                <li>Provide customer support and respond to inquiries</li>
+                <li>Send you transaction confirmations and important updates</li>
+                <li>Comply with legal and regulatory requirements</li>
+              </ul>
+              
+              <h4 class="text-lg font-bold text-gray-800">3. Data Security</h4>
+              <p>We implement industry-standard security measures to protect your personal information, including SSL encryption for all transactions. However, no method of transmission over the internet is completely secure.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">4. Information Sharing</h4>
+              <p>We do not share your personal information with third parties except as required by law or to provide services. We may share information with payment processors and legal authorities when necessary.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">5. Cookies and Tracking</h4>
+              <p>We use cookies and similar tracking technologies to enhance your experience. You can control cookie settings in your browser preferences.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">6. Your Rights</h4>
+              <p>You have the right to access, update, or delete your personal information. You may contact us at support@investhub.com to exercise these rights.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">7. Retention of Information</h4>
+              <p>We retain your information for as long as necessary to provide services and comply with legal obligations. Deleted accounts may have information retained for record-keeping purposes.</p>
+              
+              <h4 class="text-lg font-bold text-gray-800">8. Contact Us</h4>
+              <p>If you have privacy concerns, please contact us at support@investhub.com or call +91 9876543210.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Toast Container -->
+      <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+      
+    </div>
+    
+  </div>
+
+  <script>
+    // State Management
+    let currentUser = null;
+    let allData = [];
+    let userTransactions = [];
+    let referralUsers = [];
+    let selectedPaymentMethod = null;
+    let loginOtpSent = false;
+    let signupOtpSent = false;
+    let pendingSignupData = null;
+    
+    const REFERRAL_BONUS = 50;
+    
+    // Data SDK Handler
+    const dataHandler = {
+      onDataChanged(data) {
+        allData = data;
+        
+        if (currentUser) {
+          const userData = data.find(d => d.type === 'user' && d.__backendId === currentUser.__backendId);
+          if (userData) {
+            currentUser = userData;
+            updateUserUI();
+          }
+          
+          userTransactions = data.filter(d => d.type === 'transaction' && d.user_id === currentUser.__backendId);
+          referralUsers = data.filter(d => d.type === 'user' && d.referred_by === currentUser.referral_code);
+          
+          renderTransactions();
+          renderReferralList();
+        }
+      }
+    };
+    
+    // Initialize Data SDK
+    async function initDataSdk() {
+      if (window.dataSdk) {
+        const result = await window.dataSdk.init(dataHandler);
+        if (!result.isOk) {
+          console.error('Failed to initialize Data SDK');
+        }
+      }
+    }
+    
+    initDataSdk();
+    
+    // Utility Functions
+    function generateOTP() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+    
+    function generateReferralCode() {
+      return 'REF' + Math.random().toString(36).substring(2, 8).toUpperCase();
+    }
+    
+    function hashPassword(password) {
+      let hash = 0;
+      for (let i = 0; i < password.length; i++) {
+        const char = password.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash;
+      }
+      return hash.toString();
+    }
+    
+    function formatCurrency(amount) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+      }).format(amount);
+    }
+    
+    function formatDate(dateString) {
+      return new Date(dateString).toLocaleDateString('en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+    
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      const colors = {
+        success: 'bg-green-500',
+        error: 'bg-red-500',
+        info: 'bg-blue-500'
+      };
+      
+      toast.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300`;
+      toast.textContent = message;
+      
+      container.appendChild(toast);
+      
+      setTimeout(() => toast.classList.remove('translate-x-full'), 10);
+      setTimeout(() => {
+        toast.classList.add('translate-x-full');
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+    
+    // Modal Functions
+    function openModal(modalId) {
+      document.getElementById(`${modalId}-modal`).classList.remove('hidden');
+      document.body.style.overflow = 'hidden';
+    }
+    
+    function closeModal(modalId) {
+      document.getElementById(`${modalId}-modal`).classList.add('hidden');
+      document.body.style.overflow = '';
+    }
+    
+    function switchModal(from, to) {
+      closeModal(from);
+      openModal(to);
+    }
+    
+    // Tab Switching
+    function switchLoginTab(tab) {
+      const emailTab = document.getElementById('login-tab-email');
+      const phoneTab = document.getElementById('login-tab-phone');
+      const emailForm = document.getElementById('login-email-form');
+      const phoneForm = document.getElementById('login-phone-form');
+      
+      if (tab === 'email') {
+        emailTab.classList.add('bg-green-100', 'text-green-600');
+        emailTab.classList.remove('text-gray-400');
+        phoneTab.classList.remove('bg-green-100', 'text-green-600');
+        phoneTab.classList.add('text-gray-400');
+        emailForm.classList.remove('hidden');
+        phoneForm.classList.add('hidden');
+      } else {
+        phoneTab.classList.add('bg-green-100', 'text-green-600');
+        phoneTab.classList.remove('text-gray-400');
+        emailTab.classList.remove('bg-green-100', 'text-green-600');
+        emailTab.classList.add('text-gray-400');
+        phoneForm.classList.remove('hidden');
+        emailForm.classList.add('hidden');
+      }
+    }
+    
+    function switchSignupTab(tab) {
+      const emailTab = document.getElementById('signup-tab-email');
+      const phoneTab = document.getElementById('signup-tab-phone');
+      const emailForm = document.getElementById('signup-email-form');
+      const phoneForm = document.getElementById('signup-phone-form');
+      
+      if (tab === 'email') {
+        emailTab.classList.add('bg-green-100', 'text-green-600');
+        emailTab.classList.remove('text-gray-400');
+        phoneTab.classList.remove('bg-green-100', 'text-green-600');
+        phoneTab.classList.add('text-gray-400');
+        emailForm.classList.remove('hidden');
+        phoneForm.classList.add('hidden');
+      } else {
+        phoneTab.classList.add('bg-green-100', 'text-green-600');
+        phoneTab.classList.remove('text-gray-400');
+        emailTab.classList.remove('bg-green-100', 'text-green-600');
+        emailTab.classList.add('text-gray-400');
+        phoneForm.classList.remove('hidden');
+        emailForm.classList.add('hidden');
+      }
+    }
+    
+    // Authentication Handlers
+    async function handleEmailLogin(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const errorEl = document.getElementById('login-email-error');
+      const btn = document.getElementById('login-email-btn');
+      
+      btn.disabled = true;
+      btn.textContent = 'Logging in...';
+      
+      const user = allData.find(d => d.type === 'user' && d.email === email);
+      
+      if (!user) {
+        errorEl.textContent = 'Account not found. Please sign up.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+      }
+      
+      if (user.password_hash !== hashPassword(password)) {
+        errorEl.textContent = 'Incorrect password. Please try again.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+      }
+      
+      currentUser = user;
+      closeModal('login');
+      updateUserUI();
+      showToast('Welcome back! Login successful.', 'success');
+      
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    }
+    
+    async function handlePhoneLogin(event) {
+      event.preventDefault();
+      
+      const phone = document.getElementById('login-phone').value.trim();
+      const errorEl = document.getElementById('login-phone-error');
+      const btn = document.getElementById('login-phone-btn');
+      
+      if (!loginOtpSent) {
+        const user = allData.find(d => d.type === 'user' && d.phone === phone);
+        
+        if (!user) {
+          errorEl.textContent = 'Account not found. Please sign up.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Sending OTP...';
+        
+        const otp = generateOTP();
+        
+        const result = await window.dataSdk.update({
+          ...user,
+          otp: otp,
+          otp_expiry: Date.now() + 300000
+        });
+        
+        if (result.isOk) {
+          loginOtpSent = true;
+          document.getElementById('login-otp-section').classList.remove('hidden');
+          btn.textContent = 'Verify OTP';
+          showToast(`Demo OTP: ${otp}`, 'info');
+          errorEl.classList.add('hidden');
+        } else {
+          errorEl.textContent = 'Failed to send OTP. Please try again.';
+          errorEl.classList.remove('hidden');
+        }
+        
+        btn.disabled = false;
+      } else {
+        const otp = document.getElementById('login-otp').value.trim();
+        const user = allData.find(d => d.type === 'user' && d.phone === phone);
+        
+        if (!user || user.otp !== otp || Date.now() > user.otp_expiry) {
+          errorEl.textContent = 'Invalid or expired OTP. Please try again.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        
+        await window.dataSdk.update({
+          ...user,
+          otp: '',
+          otp_expiry: 0
+        });
+        
+        currentUser = user;
+        closeModal('login');
+        updateUserUI();
+        showToast('Welcome back! Login successful.', 'success');
+      }
+    }
+    
+    async function handleEmailSignup(event) {
+      event.preventDefault();
+      
+      const email = document.getElementById('signup-email').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm').value;
+      const referralCode = document.getElementById('signup-referral').value.trim();
+      const errorEl = document.getElementById('signup-email-error');
+      const btn = document.getElementById('signup-email-btn');
+      
+      if (password !== confirm) {
+        errorEl.textContent = 'Passwords do not match.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      if (!signupOtpSent) {
+        const existingUser = allData.find(d => d.type === 'user' && d.email === email);
+        if (existingUser) {
+          errorEl.textContent = 'An account with this email already exists.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Sending OTP...';
+        
+        const otp = generateOTP();
+        const newReferralCode = generateReferralCode();
+        
+        pendingSignupData = {
+          email,
+          password,
+          referralCode,
+          newReferralCode,
+          otp,
+          otp_expiry: Date.now() + 300000
+        };
+        
+        signupOtpSent = true;
+        document.getElementById('signup-otp-email-section').classList.remove('hidden');
+        btn.textContent = 'Verify & Create Account';
+        showToast(`Demo OTP: ${otp}`, 'info');
+        errorEl.classList.add('hidden');
+        btn.disabled = false;
+      } else {
+        const otp = document.getElementById('signup-email-otp').value.trim();
+        
+        if (!pendingSignupData || pendingSignupData.otp !== otp || Date.now() > pendingSignupData.otp_expiry) {
+          errorEl.textContent = 'Invalid or expired OTP. Please try again.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+        
+        if (allData.length >= 999) {
+          errorEl.textContent = 'System is at capacity. Please try again later.';
+          errorEl.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Verify & Create Account';
+          return;
+        }
+        
+        let bonus = 0;
+        
+        if (pendingSignupData.referralCode) {
+          const referrer = allData.find(d => d.type === 'user' && d.referral_code === pendingSignupData.referralCode);
+          if (referrer) {
+            bonus = REFERRAL_BONUS;
+            await window.dataSdk.update({
+              ...referrer,
+              referral_bonus: (referrer.referral_bonus || 0) + REFERRAL_BONUS,
+              balance: (referrer.balance || 0) + REFERRAL_BONUS,
+              total_referrals: (referrer.total_referrals || 0) + 1
+            });
+          }
+        }
+        
+        const result = await window.dataSdk.create({
+          type: 'user',
+          email: pendingSignupData.email,
+          phone: '',
+          password_hash: hashPassword(pendingSignupData.password),
+          otp: '',
+          otp_expiry: 0,
+          balance: bonus,
+          referral_code: pendingSignupData.newReferralCode,
+          referred_by: pendingSignupData.referralCode || '',
+          referral_bonus: 0,
+          total_referrals: 0,
+          created_at: new Date().toISOString()
+        });
+        
+        if (result.isOk) {
+          closeModal('signup');
+          showToast(`Account created successfully! ${bonus > 0 ? `You earned ₹${bonus} referral bonus!` : ''}`, 'success');
+          openModal('login');
+        } else {
+          errorEl.textContent = 'Failed to create account. Please try again.';
+          errorEl.classList.remove('hidden');
+        }
+        
+        btn.disabled = false;
+        btn.textContent = 'Verify & Create Account';
+      }
+    }
+    
+    async function handlePhoneSignup(event) {
+      event.preventDefault();
+      
+      const phone = document.getElementById('signup-phone').value.trim();
+      const referralCode = document.getElementById('signup-referral').value.trim();
+      const errorEl = document.getElementById('signup-phone-error');
+      const btn = document.getElementById('signup-phone-btn');
+      
+      if (!signupOtpSent) {
+        const existingUser = allData.find(d => d.type === 'user' && d.phone === phone);
+        if (existingUser) {
+          errorEl.textContent = 'An account with this number already exists.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Sending OTP...';
+        
+        const otp = generateOTP();
+        const newReferralCode = generateReferralCode();
+        
+        pendingSignupData = {
+          phone,
+          referralCode,
+          newReferralCode,
+          otp,
+          otp_expiry: Date.now() + 300000
+        };
+        
+        signupOtpSent = true;
+        document.getElementById('signup-otp-phone-section').classList.remove('hidden');
+        btn.textContent = 'Verify & Create Account';
+        showToast(`Demo OTP: ${otp}`, 'info');
+        errorEl.classList.add('hidden');
+        btn.disabled = false;
+      } else {
+        const otp = document.getElementById('signup-phone-otp').value.trim();
+        
+        if (!pendingSignupData || pendingSignupData.otp !== otp || Date.now() > pendingSignupData.otp_expiry) {
+          errorEl.textContent = 'Invalid or expired OTP. Please try again.';
+          errorEl.classList.remove('hidden');
+          return;
+        }
+        
+        btn.disabled = true;
+        btn.textContent = 'Creating account...';
+        
+        if (allData.length >= 999) {
+          errorEl.textContent = 'System is at capacity. Please try again later.';
+          errorEl.classList.remove('hidden');
+          btn.disabled = false;
+          btn.textContent = 'Verify & Create Account';
+          return;
+        }
+        
+        let bonus = 0;
+        
+        if (pendingSignupData.referralCode) {
+          const referrer = allData.find(d => d.type === 'user' && d.referral_code === pendingSignupData.referralCode);
+          if (referrer) {
+            bonus = REFERRAL_BONUS;
+            await window.dataSdk.update({
+              ...referrer,
+              referral_bonus: (referrer.referral_bonus || 0) + REFERRAL_BONUS,
+              balance: (referrer.balance || 0) + REFERRAL_BONUS,
+              total_referrals: (referrer.total_referrals || 0) + 1
+            });
+          }
+        }
+        
+        const result = await window.dataSdk.create({
+          type: 'user',
+          email: '',
+          phone: pendingSignupData.phone,
+          password_hash: '',
+          otp: '',
+          otp_expiry: 0,
+          balance: bonus,
+          referral_code: pendingSignupData.newReferralCode,
+          referred_by: pendingSignupData.referralCode || '',
+          referral_bonus: 0,
+          total_referrals: 0,
+          created_at: new Date().toISOString()
+        });
+        
+        if (result.isOk) {
+          closeModal('signup');
+          showToast(`Account created successfully! ${bonus > 0 ? `You earned ₹${bonus} referral bonus!` : ''}`, 'success');
+          openModal('login');
+        } else {
+          errorEl.textContent = 'Failed to create account. Please try again.';
+          errorEl.classList.remove('hidden');
+        }
+        
+        btn.disabled = false;
+        btn.textContent = 'Verify & Create Account';
+      }
+    }
+    
+    function logout() {
+      currentUser = null;
+      userTransactions = [];
+      referralUsers = [];
+      updateUserUI();
+      hideTransactions();
+      hideReferral();
+      showToast('You have been logged out.', 'info');
+      document.getElementById('user-dropdown').classList.add('hidden');
+    }
+    
+    function updateUserUI() {
+      const authButtons = document.getElementById('auth-buttons');
+      const userMenu = document.getElementById('user-menu');
+      const userBalance = document.getElementById('user-balance');
+      const withdrawBalance = document.getElementById('withdraw-balance');
+      
+      if (currentUser) {
+        authButtons.classList.add('hidden');
+        userMenu.classList.remove('hidden');
+        userMenu.classList.add('flex');
+        userBalance.textContent = formatCurrency(currentUser.balance || 0);
+        if (withdrawBalance) {
+          withdrawBalance.textContent = formatCurrency(currentUser.balance || 0);
+        }
+      } else {
+        authButtons.classList.remove('hidden');
+        userMenu.classList.add('hidden');
+        userMenu.classList.remove('flex');
+      }
+    }
+    
+    // Dropdown toggle
+    function toggleUserDropdown() {
+      document.getElementById('user-dropdown').classList.toggle('hidden');
+    }
+    
+    document.addEventListener('click', (e) => {
+      const dropdown = document.getElementById('user-dropdown');
+      const trigger = e.target.closest('[onclick="toggleUserDropdown()"]');
+      if (!trigger && !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
+      }
+    });
+    
+    // Referral Functions
+    function copyReferralCode() {
+      if (!currentUser) return;
+      
+      const code = currentUser.referral_code;
+      const btn = document.querySelector('button[onclick="copyReferralCode()"]');
+      
+      navigator.clipboard.writeText(code).then(() => {
+        const originalText = btn.textContent;
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('bg-green-700');
+        
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.classList.remove('bg-green-700');
+        }, 2000);
+      });
+    }
+    
+    function renderReferralList() {
+      const list = document.getElementById('referral-list');
+      const codeEl = document.getElementById('referral-code');
+      const referralsEl = document.getElementById('total-referrals');
+      const earningsEl = document.getElementById('referral-earnings');
+      
+      if (!currentUser) return;
+      
+      codeEl.textContent = currentUser.referral_code || '—';
+      referralsEl.textContent = currentUser.total_referrals || 0;
+      earningsEl.textContent = formatCurrency(currentUser.referral_bonus || 0);
+      
+      if (!referralUsers || referralUsers.length === 0) {
+        list.innerHTML = `
+          <div class="px-6 py-12 text-center text-gray-400">
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-4xl">👫</span>
+              <p>No referrals yet. Share your code to earn!</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+      
+      list.innerHTML = referralUsers.map(user => {
+        const joinDate = new Date(user.created_at);
+        const joinDateStr = joinDate.toLocaleDateString('en-IN', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric'
+        });
+        
+        const email = user.email || user.phone || 'Unknown';
+        
+        return `
+          <div class="px-6 py-4 flex items-center justify-between hover:bg-gray-50">
+            <div class="flex items-center gap-4">
+              <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center text-lg">👤</div>
+              <div>
+                <p class="font-medium text-gray-800">${email}</p>
+                <p class="text-sm text-gray-500">Joined: ${joinDateStr}</p>
+              </div>
+            </div>
+            <div class="text-right">
+              <p class="font-bold text-green-600">+₹${REFERRAL_BONUS}</p>
+              <p class="text-xs text-gray-500">Earned</p>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+    
+    // Deposit Functions
+    function checkAuthAndDeposit(amount) {
+      if (!currentUser) {
+        openModal('signup');
+        return;
+      }
+      
+      document.getElementById('deposit-amount').value = amount;
+      openModal('deposit');
+    }
+    
+    function setDepositAmount(amount) {
+      document.getElementById('deposit-amount').value = amount;
+    }
+    
+    function selectPaymentMethod(method) {
+      selectedPaymentMethod = method;
+      document.getElementById('deposit-method').value = method;
+      
+      document.querySelectorAll('.payment-option').forEach(el => {
+        el.classList.remove('selected');
+      });
+      
+      event.target.closest('.payment-option')?.classList.add('selected');
+    }
+    
+    async function handleDeposit(event) {
+      event.preventDefault();
+      
+      if (!currentUser) {
+        showToast('Please login to deposit.', 'error');
+        closeModal('deposit');
+        openModal('login');
+        return;
+      }
+      
+      const amount = parseInt(document.getElementById('deposit-amount').value);
+      const method = document.getElementById('deposit-method').value;
+      const errorEl = document.getElementById('deposit-error');
+      const successEl = document.getElementById('deposit-success');
+      const btn = document.getElementById('deposit-btn');
+      
+      if (amount < 2000) {
+        errorEl.textContent = 'Minimum deposit amount is ₹2,000.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      if (!method) {
+        errorEl.textContent = 'Please select a payment method.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      
+      if (allData.length >= 999) {
+        errorEl.textContent = 'System is at capacity. Please try again later.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Deposit Now';
+        return;
+      }
+      
+      const methodNames = {
+        phonepe: 'PhonePe',
+        gpay: 'Google Pay',
+        paytm: 'Paytm',
+        bank: 'Bank Transfer'
+      };
+      
+      const txResult = await window.dataSdk.create({
+        type: 'transaction',
+        transaction_type: 'deposit',
+        amount: amount,
+        payment_method: methodNames[method],
+        status: 'completed',
+        user_id: currentUser.__backendId,
+        plan_name: '',
+        days: 0,
+        created_at: new Date().toISOString()
+      });
+      
+      if (txResult.isOk) {
+        const newBalance = (currentUser.balance || 0) + amount;
+        await window.dataSdk.update({
+          ...currentUser,
+          balance: newBalance
+        });
+        
+        successEl.textContent = `Successfully deposited ${formatCurrency(amount)}!`;
+        successEl.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        showToast(`Deposit of ${formatCurrency(amount)} successful!`, 'success');
+        
+        setTimeout(() => {
+          closeModal('deposit');
+          document.getElementById('deposit-form').reset();
+        }, 1500);
+      } else {
+        errorEl.textContent = 'Deposit failed. Please try again.';
+        errorEl.classList.remove('hidden');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Deposit Now';
+    }
+    
+    async function handleWithdraw(event) {
+      event.preventDefault();
+      
+      if (!currentUser) {
+        showToast('Please login to withdraw.', 'error');
+        closeModal('withdraw');
+        openModal('login');
+        return;
+      }
+      
+      const amount = parseInt(document.getElementById('withdraw-amount').value);
+      const upi = document.getElementById('withdraw-upi').value.trim();
+      const errorEl = document.getElementById('withdraw-error');
+      const successEl = document.getElementById('withdraw-success');
+      const btn = document.getElementById('withdraw-btn');
+      
+      if (amount < 1000) {
+        errorEl.textContent = 'Minimum withdrawal amount is ₹1,000.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      if (amount > (currentUser.balance || 0)) {
+        errorEl.textContent = 'Insufficient balance.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      if (!upi.includes('@')) {
+        errorEl.textContent = 'Please enter a valid UPI ID.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      
+      btn.disabled = true;
+      btn.textContent = 'Processing...';
+      
+      if (allData.length >= 999) {
+        errorEl.textContent = 'System is at capacity. Please try again later.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Withdraw Now';
+        return;
+      }
+      
+      const txResult = await window.dataSdk.create({
+        type: 'transaction',
+        transaction_type: 'withdrawal',
+        amount: amount,
+        payment_method: `UPI: ${upi}`,
+        status: 'pending',
+        user_id: currentUser.__backendId,
+        plan_name: '',
+        days: 0,
+        created_at: new Date().toISOString()
+      });
+      
+      if (txResult.isOk) {
+        const newBalance = (currentUser.balance || 0) - amount;
+        await window.dataSdk.update({
+          ...currentUser,
+          balance: newBalance
+        });
+        
+        successEl.textContent = `Withdrawal of ${formatCurrency(amount)} initiated! Processing within 24-48 hours.`;
+        successEl.classList.remove('hidden');
+        errorEl.classList.add('hidden');
+        showToast('Withdrawal request submitted!', 'success');
+        
+        setTimeout(() => {
+          closeModal('withdraw');
+          document.getElementById('withdraw-form').reset();
+        }, 2000);
+      } else {
+        errorEl.textContent = 'Withdrawal failed. Please try again.';
+        errorEl.classList.remove('hidden');
+      }
+      
+      btn.disabled = false;
+      btn.textContent = 'Withdraw Now';
+    }
+    
+    // Investment Functions
+    function checkAuthAndInvest(slotName, minAmount, days) {
+      if (!currentUser) {
+        showToast('Please login to invest.', 'info');
+        openModal('signup');
+        return;
+      }
+      
+      if ((currentUser.balance || 0) < minAmount) {
+        showToast(`Insufficient balance. Minimum required: ${formatCurrency(minAmount)}`, 'error');
+        openModal('deposit');
+        return;
+      }
+      
+      createInvestment(slotName, minAmount, days);
+    }
+    
+    async function createInvestment(slotName, amount, days) {
+      if (allData.length >= 999) {
+        showToast('System is at capacity. Please try again later.', 'error');
+        return;
+      }
+      
+      const txResult = await window.dataSdk.create({
+        type: 'transaction',
+        transaction_type: 'investment',
+        amount: amount,
+        payment_method: 'Balance',
+        status: 'completed',
+        user_id: currentUser.__backendId,
+        plan_name: slotName,
+        days: days,
+        created_at: new Date().toISOString()
+      });
+      
+      if (txResult.isOk) {
+        const newBalance = (currentUser.balance || 0) - amount;
+        await window.dataSdk.update({
+          ...currentUser,
+          balance: newBalance
+        });
+        
+        showToast(`Invested ${formatCurrency(amount)} in ${slotName} for ${days} days!`, 'success');
+      } else {
+        showToast('Investment failed. Please try again.', 'error');
+      }
+    }
+    
+    // Transaction History
+    function showSection(section) {
+      document.getElementById('user-dropdown').classList.add('hidden');
+      
+      if (section === 'transactions') {
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('referral-section').classList.add('hidden');
+        document.getElementById('transactions-section').classList.remove('hidden');
+        renderTransactions();
+      } else if (section === 'referral') {
+        document.getElementById('main-content').classList.add('hidden');
+        document.getElementById('transactions-section').classList.add('hidden');
+        document.getElementById('referral-section').classList.remove('hidden');
+        renderReferralList();
+      }
+    }
+    
+    function hideTransactions() {
+      document.getElementById('main-content').classList.remove('hidden');
+      document.getElementById('transactions-section').classList.add('hidden');
+    }
+    
+    function hideReferral() {
+      document.getElementById('main-content').classList.remove('hidden');
+      document.getElementById('referral-section').classList.add('hidden');
+    }
+    
+    function filterTransactions() {
+      renderTransactions();
+    }
+    
+    function renderTransactions() {
+      const tbody = document.getElementById('transactions-table');
+      const typeFilter = document.getElementById('filter-type').value;
+      const statusFilter = document.getElementById('filter-status').value;
+      const sortFilter = document.getElementById('filter-sort').value;
+      
+      let filtered = [...userTransactions];
+      
+      if (typeFilter !== 'all') {
+        filtered = filtered.filter(t => t.transaction_type === typeFilter);
+      }
+      
+      if (statusFilter !== 'all') {
+        filtered = filtered.filter(t => t.status === statusFilter);
+      }
+      
+      filtered.sort((a, b) => {
+        switch (sortFilter) {
+          case 'oldest':
+            return new Date(a.created_at) - new Date(b.created_at);
+          case 'amount-high':
+            return b.amount - a.amount;
+          case 'amount-low':
+            return a.amount - b.amount;
+          default:
+            return new Date(b.created_at) - new Date(a.created_at);
+        }
+      });
+      
+      if (filtered.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-gray-400">
+              <div class="flex flex-col items-center gap-2">
+                <span class="text-4xl">📊</span>
+                <p>No transactions found</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+      
+      tbody.innerHTML = filtered.map(tx => {
+        const typeLabels = {
+          deposit: { text: 'Deposit', color: 'text-green-600', icon: '⬇️' },
+          withdrawal: { text: 'Withdrawal', color: 'text-orange-600', icon: '⬆️' },
+          investment: { text: 'Investment', color: 'text-blue-600', icon: '🎯' }
+        };
+        
+        const statusLabels = {
+          completed: { text: 'Completed', class: 'bg-green-100 text-green-700' },
+          pending: { text: 'Pending', class: 'bg-yellow-100 text-yellow-700' },
+          failed: { text: 'Failed', class: 'bg-red-100 text-red-700' }
+        };
+        
+        const type = typeLabels[tx.transaction_type] || { text: tx.transaction_type, color: 'text-gray-600', icon: '📄' };
+        const status = statusLabels[tx.status] || { text: tx.status, class: 'bg-gray-100 text-gray-700' };
+        
+        const details = tx.plan_name ? `${tx.plan_name}${tx.days ? ` (${tx.days} days)` : ''}` : tx.payment_method;
+        
+        return `
+          <tr class="table-row border-b border-gray-200">
+            <td class="px-6 py-4 text-gray-700 text-sm">${formatDate(tx.created_at)}</td>
+            <td class="px-6 py-4">
+              <span class="flex items-center gap-2 ${type.color} font-medium">
+                <span>${type.icon}</span>
+                ${type.text}
+              </span>
+            </td>
+            <td class="px-6 py-4 text-gray-600 text-sm">${details}</td>
+            <td class="px-6 py-4 font-bold ${tx.transaction_type === 'deposit' ? 'text-green-600' : 'text-orange-600'}">
+              ${tx.transaction_type === 'deposit' ? '+' : '-'}${formatCurrency(tx.amount)}
+            </td>
+            <td class="px-6 py-4">
+              <span class="px-3 py-1 rounded-full text-xs font-medium ${status.class}">${status.text}</span>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+    
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cf3f091440c4838',t:'MTc3MTMxNzIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
