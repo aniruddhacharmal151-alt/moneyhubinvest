@@ -1801,51 +1801,43 @@
   console.log("Supabase connected");
 </script>
     <script>
-  // Grab Canva login and signup inputs
-  const loginInput  = document.querySelector('input[placeholder="Enter your email"]:nth-of-type(1)'); // Login input
-  const signupInput = document.querySelector('input[placeholder="Enter your email"]:nth-of-type(2)'); // Sign-up input
+document.addEventListener("DOMContentLoaded", function () {
 
-  // Grab Canva buttons
-  const loginBtn  = document.getElementById("login-email-btn");   // Login button
-  const signupBtn = document.getElementById("signup-email-btn");  // Sign-up button
+  const loginBtn  = document.getElementById("login-email-btn");
+  const signupBtn = document.getElementById("signup-email-btn");
 
-  // Function to send magic link via Supabase
   async function sendMagicLink(email) {
-    if (!email) return alert("Enter your email");
-    try {
-      const { error } = await supabase.auth.signInWithOtp({ email });
-      if (error) alert(error.message);
-      else alert("Check your email for the login link!");
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong");
+    if (!email) {
+      alert("Enter your email");
+      return;
+    }
+
+    const { error } = await supabase.auth.signInWithOtp({ email });
+
+    if (error) {
+      alert(error.message);
+    } else {
+      alert("Check your email for the login link!");
     }
   }
 
-  // Login button click
-  loginBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const email = loginInput.value.trim();
-    await sendMagicLink(email);
-  });
+  if (loginBtn) {
+    loginBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("login-email")?.value;
+      sendMagicLink(email);
+    });
+  }
 
-  // Sign-up button click
-  signupBtn.addEventListener("click", async (e) => {
-    e.preventDefault();
-    const email = signupInput.value.trim();
-    await sendMagicLink(email);
-  });
+  if (signupBtn) {
+    signupBtn.addEventListener("click", function(e) {
+      e.preventDefault();
+      const email = document.getElementById("signup-email")?.value;
+      sendMagicLink(email);
+    });
+  }
 
-  // Optional: show wallet section after login
-  supabase.auth.onAuthStateChange(async (event, session) => {
-    if (session) {
-      console.log("User logged in:", session.user);
-      const walletContainer = document.getElementById("wallet-container"); // Optional
-      if (walletContainer) walletContainer.style.display = "block";
-    } else {
-      console.log("User logged out");
-    }
-  });
+});
 </script>
     </body>
 </html>
