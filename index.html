@@ -789,9 +789,47 @@
       
       <!-- Toast Container -->
       <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-      
+      <!-- === LOGIN / WALLET SECTION (paste here after Toast Container) === -->
+
+<!-- AUTH / LOGIN -->
+<div id="auth-container" class="p-4 bg-white rounded shadow max-w-md mx-auto mt-4">
+  <h2 class="text-xl font-bold mb-2">Sign In / Sign Up</h2>
+  <input type="email" id="email" placeholder="Enter your email" class="border p-2 w-full mb-2"/>
+  <input type="text" id="referral" placeholder="Referral Code (optional)" class="border p-2 w-full mb-2"/>
+  <button id="loginBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Sign In / Sign Up</button>
+  <p id="login-msg" class="mt-2 text-red-500"></p>
+</div>
+
+<!-- WALLET -->
+<div id="wallet-container" class="p-4 bg-white rounded shadow max-w-2xl mx-auto mt-4" style="display:none;">
+  <h2 class="text-xl font-bold mb-2">My Wallet</h2>
+  <table class="table-auto border-collapse border border-gray-300 w-full">
+    <thead>
+      <tr>
+        <th class="border px-2 py-1">User ID</th>
+        <th class="border px-2 py-1">Balance</th>
+      </tr>
+    </thead>
+    <tbody id="walletTable"></tbody>
+  </table>
+
+  <!-- Withdraw -->
+  <div class="mt-4">
+    <input type="number" id="withdrawAmount" placeholder="Amount to withdraw" class="border p-2 mr-2"/>
+    <button id="withdrawBtn" class="bg-red-500 text-white px-4 py-2 rounded">Withdraw</button>
+    <p id="withdrawMsg" class="mt-2 text-red-500"></p>
+  </div>
+
+  <!-- Deposit / UPI Payment -->
+  <div class="mt-4">
+    <h3 class="font-bold mb-2">Deposit via UPI</h3>
+    <div class="flex gap-2">
+      <button class="upi-btn" data-app="gpay"><img src="gpay_logo.png" alt="Google Pay" class="h-10"/></button>
+      <button class="upi-btn" data-app="phonepe"><img src="phonepe_logo.png" alt="PhonePe" class="h-10"/></button>
+      <button class="upi-btn" data-app="paytm"><img src="paytm_logo.png" alt="Paytm" class="h-10"/></button>
     </div>
-    
+    <p id="depositMsg" class="mt-2 text-green-600"></p>
+    </div>
   </div>
 
   <script>
