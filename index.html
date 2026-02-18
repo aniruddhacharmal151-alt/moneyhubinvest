@@ -1802,6 +1802,38 @@
   window.supabase = supabaseClient;
 </script>
     <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const signupBtn = document.getElementById("signup-email-btn");
+
+  if (signupBtn) {
+    signupBtn.addEventListener("click", async function(e) {
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const emailInput = document.getElementById("signup-email");
+      const email = emailInput ? emailInput.value : null;
+
+      if (!email) {
+        alert("Enter your email");
+        return;
+      }
+
+      alert("Trying Supabase...");
+
+      const { error } = await window.supabase.auth.signInWithOtp({ email });
+
+      if (error) {
+        alert("Error: " + error.message);
+      } else {
+        alert("Magic link sent!");
+      }
+
+    });
+  }
+
+});
 </script>
     </body>
 </html>
