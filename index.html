@@ -1803,38 +1803,18 @@
     <script>
 document.addEventListener("DOMContentLoaded", function () {
 
-  const loginBtn  = document.getElementById("login-email-btn");
   const signupBtn = document.getElementById("signup-email-btn");
 
-  async function sendMagicLink(email) {
-    if (!email) {
-      alert("Enter your email");
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithOtp({ email });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Check your email for the login link!");
-    }
-  }
-
-  if (loginBtn) {
-    loginBtn.addEventListener("click", function(e) {
-      e.preventDefault();
-      const email = document.getElementById("login-email")?.value;
-      sendMagicLink(email);
-    });
-  }
-
   if (signupBtn) {
+    alert("Signup button found ✅");
+
     signupBtn.addEventListener("click", function(e) {
       e.preventDefault();
-      const email = document.getElementById("signup-email")?.value;
-      sendMagicLink(email);
+      alert("Signup button clicked ✅");
     });
+
+  } else {
+    alert("Signup button NOT found ❌");
   }
 
 });
