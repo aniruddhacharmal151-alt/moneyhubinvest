@@ -488,6 +488,11 @@
               </div>
               <div id="login-email-error" class="hidden text-red-600 text-sm"></div>
               <button type="submit" id="login-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Login</button>
+               <p class="mt-2 text-sm text-gray-500">
+  <a href="#" id="forgot-password-link" class="text-blue-500 hover:underline">
+    Forgot Password?
+  </a>
+</p>
             </form>
             <input id="otp-input" placeholder="Enter OTP" style="display:none;">
 
@@ -1793,6 +1798,28 @@ window.location.href = "dashboard.html";
   );
 
   window.supabase = supabaseClient;
+  // Forgot Password
+const forgotPasswordLink = document.getElementById("forgot-password-link");
+
+if (forgotPasswordLink) {
+  forgotPasswordLink.addEventListener("click", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("login-email").value;
+    if (!email) return alert("Enter your email in the email field first!");
+
+    try {
+      const { data, error } = await window.supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.href // stay on same page
+      });
+
+      if (error) throw error;
+      alert("Password reset link sent! Check your email.");
+    } catch (err) {
+      alert("Error: " + err.message);
+    }
+  });
+}
 </script>
     <script>
 document.addEventListener("DOMContentLoaded", function () {
