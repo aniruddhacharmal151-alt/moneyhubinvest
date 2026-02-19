@@ -1907,7 +1907,23 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 });
-</script> 
-  </script>
+
+<script>
+  // Mobile-friendly JS error logger
+  window.addEventListener("error", function(event) {
+    alert(
+      "JS Error:\nMessage: " + event.message +
+      "\nSource: " + event.filename +
+      "\nLine: " + event.lineno +
+      "\nColumn: " + event.colno
+    );
+  });
+
+  window.addEventListener("unhandledrejection", function(event) {
+    alert(
+      "Unhandled Promise Rejection:\n" + (event.reason.message || event.reason)
+    );
+  });
+</script>
     </body>
 </html>
