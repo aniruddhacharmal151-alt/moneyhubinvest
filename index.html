@@ -1909,78 +1909,55 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 <script>
 document.addEventListener("DOMContentLoaded", () => {
+<script>
+document.addEventListener("DOMContentLoaded", () => {
 
   // ---------------------------
-  // 1️⃣ JS Error Logger
+  // Grab buttons and inputs
   // ---------------------------
-  window.addEventListener("error", function(event) {
-    alert(
-      "JS Error:\nMessage: " + event.message +
-      "\nSource: " + event.filename +
-      "\nLine: " + event.lineno +
-      "\nColumn: " + event.colno
-    );
-  });
-
-  window.addEventListener("unhandledrejection", function(event) {
-    alert(
-      "Unhandled Promise Rejection:\n" + (event.reason.message || event.reason)
-    );
-  });
-
-  // ---------------------------
-  // 2️⃣ Grab inputs & buttons
-  // ---------------------------
+  const loginBtn = document.getElementById("login-email-btn");
   const signupBtn = document.getElementById("signup-email-btn");
+
+  const loginEmail = document.getElementById("login-email");
+  const loginPassword = document.getElementById("login-password");
+
   const signupEmail = document.getElementById("signup-email");
   const signupPassword = document.getElementById("signup-password");
   const signupOtp = document.getElementById("signup-email-otp");
 
-  const loginBtn = document.getElementById("login-email-btn");
-  const loginEmail = document.getElementById("login-email");
-  const loginPassword = document.getElementById("login-password");
-
   // ---------------------------
-  // 3️⃣ Signup button with OTP
+  // Prevent default form submission
   // ---------------------------
-  if(signupBtn) {
-    signupBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
-
-      if(!signupEmail.value) return alert("Enter your email!");
-      if(!signupPassword.value) return alert("Enter your password!");
-      if(!signupOtp.value) return alert("Enter OTP!");
-
-      alert("Signup clicked!\nEmail: " + signupEmail.value + "\nOTP: " + signupOtp.value);
-
-      // --- Supabase integration example ---
-      // await supabase.auth.signUp({
-      //   email: signupEmail.value,
-      //   password: signupPassword.value
-      // });
-      // Later: verify OTP
-    });
+  function safeClick(btn, callback) {
+    if(btn) {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault(); // Stop page reload
+        callback();
+      });
+    }
   }
 
   // ---------------------------
-  // 4️⃣ Login button
+  // Login button
   // ---------------------------
-  if(loginBtn) {
-    loginBtn.addEventListener("click", async (e) => {
-      e.preventDefault();
+  safeClick(loginBtn, () => {
+    if(!loginEmail.value) return alert("Enter login email!");
+    if(!loginPassword.value) return alert("Enter login password!");
+    alert("Login clicked!\nEmail: " + loginEmail.value);
+  });
 
-      if(!loginEmail.value) return alert("Enter your email!");
-      if(!loginPassword.value) return alert("Enter your password!");
-
-      alert("Login clicked!\nEmail: " + loginEmail.value);
-
-      // --- Supabase integration example ---
-      // await supabase.auth.signIn({
-      //   email: loginEmail.value,
-      //   password: loginPassword.value
-      // });
-    });
-  }
+  // ---------------------------
+  // Signup button with OTP
+  // ---------------------------
+  safeClick(signupBtn, () => {
+    if(!signupEmail.value) return alert("Enter signup email!");
+    if(!signupPassword.value) return alert("Enter signup password!");
+    if(!signupOtp.value) return alert("Enter OTP!");
+    alert(
+      "Signup clicked!\nEmail: " + signupEmail.value + 
+      "\nOTP: " + signupOtp.value
+    );
+  });
 
 });
 </script>
