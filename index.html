@@ -1017,33 +1017,22 @@
       btn.disabled = true;
       btn.textContent = 'Logging in...';
       
-      const user = allData.find(d => d.type === 'user' && d.email === email);
-      
-      if (!user) {
-        errorEl.textContent = 'Account not found. Please sign up.';
-        errorEl.classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Login';
-        return;
-      }
-      
-      if (user.password_hash !== hashPassword(password)) {
-        errorEl.textContent = 'Incorrect password. Please try again.';
-        errorEl.classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Login';
-        return;
-      }
-      
-      currentUser = user;
-      closeModal('login');
-      updateUserUI();
-      showToast('Welcome back! Login successful.', 'success');
-      
-      btn.disabled = false;
-      btn.textContent = 'Login';
-    }
-    
+      const { data, error } = await supabase.auth.signInWithPassword({
+  email: email,
+  password: password
+});
+
+if (error) {
+  errorEl.textContent = error.message;
+  errorEl.classList.remove('hidden');
+  btn.disabled = false;
+  btn.textContent = 'Login';
+  return;
+}
+
+// Success
+window.location.href = "dashboard.html";
+  
     async function handlePhoneLogin(event) {
       event.preventDefault();
       
