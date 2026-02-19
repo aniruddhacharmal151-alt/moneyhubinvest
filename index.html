@@ -1417,87 +1417,73 @@
     }
     
     async function handleDeposit(event) {
-      event.preventDefault();
-      
-      if (!currentUser) {
-        showToast('Please login to deposit.', 'error');
-        closeModal('deposit');
-        openModal('login');
-        return;
-      }
-      
-      const amount = parseInt(document.getElementById('deposit-amount').value);
-      const method = document.getElementById('deposit-method').value;
-      const errorEl = document.getElementById('deposit-error');
-      const successEl = document.getElementById('deposit-success');
-      const btn = document.getElementById('deposit-btn');
-      
-      if (amount < 2000) {
-        errorEl.textContent = 'Minimum deposit amount is ₹2,000.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      
-      if (!method) {
-        errorEl.textContent = 'Please select a payment method.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-      
-      if (allData.length >= 999) {
-        errorEl.textContent = 'System is at capacity. Please try again later.';
-        errorEl.classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Deposit Now';
-        return;
-      }
-      
-      const methodNames = {
-        phonepe: 'PhonePe',
-        gpay: 'Google Pay',
-        paytm: 'Paytm',
-        bank: 'Bank Transfer'
-      };
-      
-      const txResult = await window.dataSdk.create({
-        type: 'transaction',
-        transaction_type: 'deposit',
-        amount: amount,
-        payment_method: methodNames[method],
-        status: 'completed',
-        user_id: currentUser.__backendId,
-        plan_name: '',
-        days: 0,
-        created_at: new Date().toISOString()
-      });
-      
-      if (txResult.isOk) {
-        const newBalance = (currentUser.balance || 0) + amount;
-        await window.dataSdk.update({
-          ...currentUser,
-          balance: newBalance
-        });
-        
-        successEl.textContent = `Successfully deposited ${formatCurrency(amount)}!`;
-        successEl.classList.remove('hidden');
-        errorEl.classList.add('hidden');
-        showToast(`Deposit of ${formatCurrency(amount)} successful!`, 'success');
-        
-        setTimeout(() => {
-          closeModal('deposit');
-          document.getElementById('deposit-form').reset();
-        }, 1500);
-      } else {
-        errorEl.textContent = 'Deposit failed. Please try again.';
-        errorEl.classList.remove('hidden');
-      }
-      
-      btn.disabled = false;
-      btn.textContent = 'Deposit Now';
-    }
+  event.preventDefault();
+
+  const amount = parseFloat(document.getElementById("deposit-amount").value);
+  const method = document.getElementById("deposit-method").value;
+  const errorDiv = document.getElementById("deposit-error");
+  const successDiv = document.getElementById("deposit-success");
+
+  errorDiv.classList.add("hidden");
+  successDiv.classList.add("hidden");
+
+  if (!amount || amount < 2000) {
+    errorDiv.innerText = "Minimum deposit is ₹2,000";
+    errorDiv.classList.remove("hidden");
+    return;
+  }
+
+  if (!method) {
+    errorDiv.innerText = "Please select a payment method";
+    errorDiv.classList.remove("hidden");
+    return;
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    errorDiv.innerText = "You must be logged in.";
+    errorDiv.classList.remove("hidden");
+    return;
+  }
+
+  // 1️⃣ Insert transaction
+  const { error: txError } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: user.id,
+      transaction_type: "deposit",
+      amount: amount,
+      payment_method: method,
+      status: "completed"
+    });
+
+  if (txError) {
+    errorDiv.innerText = "Transaction failed.";
+    errorDiv.classList.remove("hidden");
+    return;
+  }
+
+  // 2️⃣ Get current wallet
+  const { data: wallet } = await supabase
+    .from("wallets")
+    .select("balance")
+    .eq("user_id", user.id)
+    .single();
+
+  const newBalance = (wallet?.balance || 0) + amount;
+
+  // 3️⃣ Update wallet balance
+  await supabase
+    .from("wallets")
+    .update({ balance: newBalance })
+    .eq("user_id", user.id);
+
+  successDiv.innerText = "Deposit successful!";
+  successDiv.classList.remove("hidden");
+
+  document.getElementById("deposit-form").reset();
+}
     
     async function handleWithdraw(event) {
       event.preventDefault();
