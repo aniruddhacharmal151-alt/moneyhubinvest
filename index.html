@@ -485,23 +485,6 @@
               <button type="submit" id="login-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Login</button>
             </form>
             
-            <!-- Phone Login -->
-            <form id="login-phone-form" onsubmit="handlePhoneLogin(event)" class="hidden space-y-4">
-              <div>
-                <label for="login-phone" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                <div class="flex">
-                  <span class="px-4 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600">+91</span>
-                  <input type="tel" id="login-phone" required pattern="[0-9]{10}" class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:border-green-500 outline-none input-focus transition" placeholder="10-digit number">
-                </div>
-              </div>
-              <div id="login-otp-section" class="hidden">
-                <label for="login-otp" class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
-                <input type="text" id="login-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
-              </div>
-              <div id="login-phone-error" class="hidden text-red-600 text-sm"></div>
-              <button type="submit" id="login-phone-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Send OTP</button>
-            </form>
-            
             <div class="mt-6 text-center">
               <p class="text-gray-600 text-sm">Don't have an account? <button onclick="switchModal('login', 'signup')" class="text-green-600 hover:underline font-medium">Sign Up</button></p>
             </div>
@@ -554,23 +537,6 @@
               </div>
               <div id="signup-email-error" class="hidden text-red-600 text-sm"></div>
               <button type="submit" id="signup-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Sign Up</button>
-            </form>
-            
-            <!-- Phone Signup -->
-            <form id="signup-phone-form" onsubmit="handlePhoneSignup(event)" class="hidden space-y-4">
-              <div>
-                <label for="signup-phone" class="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-                <div class="flex">
-                  <span class="px-4 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-600">+91</span>
-                  <input type="tel" id="signup-phone" required pattern="[0-9]{10}" class="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:border-green-500 outline-none input-focus transition" placeholder="10-digit number">
-                </div>
-              </div>
-              <div id="signup-otp-phone-section" class="hidden">
-                <label for="signup-phone-otp" class="block text-sm font-medium text-gray-700 mb-1">Enter OTP</label>
-                <input type="text" id="signup-phone-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
-              </div>
-              <div id="signup-phone-error" class="hidden text-red-600 text-sm"></div>
-              <button type="submit" id="signup-phone-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Send OTP</button>
             </form>
             
             <div class="mt-6 text-center">
