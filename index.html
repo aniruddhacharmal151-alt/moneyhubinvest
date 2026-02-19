@@ -1910,20 +1910,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  window.addEventListener("error", function(event) {
-    alert(
-      "JS Error:\nMessage: " + event.message +
-      "\nSource: " + event.filename +
-      "\nLine: " + event.lineno +
-      "\nColumn: " + event.colno
-    );
-  });
-
-  window.addEventListener("unhandledrejection", function(event) {
-    alert(
-      "Unhandled Promise Rejection:\n" + (event.reason.message || event.reason)
-    );
-  });
+  alert("JS loaded! Buttons will be monitored for errors.");
 });
 </script>
     </body>
