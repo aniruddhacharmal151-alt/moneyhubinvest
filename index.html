@@ -1907,10 +1907,63 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
 });
-
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  alert("JS loaded! Buttons will be monitored for errors.");
+
+  // ---------------------------
+  // 1️⃣ JS Error Logger
+  // ---------------------------
+  window.addEventListener("error", function(event) {
+    alert(
+      "JS Error:\nMessage: " + event.message +
+      "\nSource: " + event.filename +
+      "\nLine: " + event.lineno +
+      "\nColumn: " + event.colno
+    );
+  });
+
+  window.addEventListener("unhandledrejection", function(event) {
+    alert(
+      "Unhandled Promise Rejection:\n" + (event.reason.message || event.reason)
+    );
+  });
+
+  // ---------------------------
+  // 2️⃣ Button Handlers
+  // ---------------------------
+  const loginBtn = document.getElementById("login-email-btn");
+  const signupBtn = document.getElementById("signup-email-btn");
+  const forgotBtn = document.getElementById("forgot-password-btn"); // change ID if yours is different
+  const depositBtn = document.getElementById("deposit-btn"); // change ID if yours is different
+
+  // Temporary alerts to confirm clicks
+  if(loginBtn) loginBtn.addEventListener("click", () => alert("Login button clicked"));
+  if(signupBtn) signupBtn.addEventListener("click", () => alert("Signup button clicked"));
+  if(forgotBtn) forgotBtn.addEventListener("click", () => alert("Forgot Password clicked"));
+  if(depositBtn) depositBtn.addEventListener("click", () => alert("Deposit clicked"));
+
+  // ---------------------------
+  // 3️⃣ Example: Checking Input Fields (optional)
+  // ---------------------------
+  const loginEmailInput = document.getElementById("login-email");
+  const signupEmailInput = document.getElementById("signup-email");
+
+  if(loginBtn && loginEmailInput) {
+    loginBtn.addEventListener("click", () => {
+      if(loginEmailInput.value === "") {
+        alert("Please enter your login email!");
+      }
+    });
+  }
+
+  if(signupBtn && signupEmailInput) {
+    signupBtn.addEventListener("click", () => {
+      if(signupEmailInput.value === "") {
+        alert("Please enter your signup email!");
+      }
+    });
+  }
+
 });
 </script>
     </body>
