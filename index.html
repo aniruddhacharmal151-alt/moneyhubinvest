@@ -1909,7 +1909,7 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 <script>
-  // Mobile-friendly JS error logger
+document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("error", function(event) {
     alert(
       "JS Error:\nMessage: " + event.message +
@@ -1924,6 +1924,7 @@ document.addEventListener("DOMContentLoaded", function () {
       "Unhandled Promise Rejection:\n" + (event.reason.message || event.reason)
     );
   });
+});
 </script>
     </body>
 </html>
