@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Investment Platform</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="/_sdk/element_sdk.js"></script>
   <script src="/_sdk/data_sdk.js"></script>
@@ -487,18 +488,9 @@
                 <input type="password" id="login-password" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Enter your password">
               </div>
               <div id="login-email-error" class="hidden text-red-600 text-sm"></div>
-              <button type="button" id="login-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Login</button>
-               <p class="mt-2 text-sm text-gray-500">
-  <a href="#" id="forgot-password-link" class="text-blue-500 hover:underline">
-    Forgot Password?
-  </a>
-</p>
+              <button type="submit" id="login-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Login</button>
             </form>
-            <input id="otp-input" placeholder="Enter OTP" style="display:none;">
-
-<button id="verify-otp-btn" style="display:none;">
-  Verify OTP
-</button>
+            
             <!-- Phone Login -->
             <form id="login-phone-form" onsubmit="handlePhoneLogin(event)" class="hidden space-y-4">
               <div>
@@ -513,7 +505,7 @@
                 <input type="text" id="login-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
               </div>
               <div id="login-phone-error" class="hidden text-red-600 text-sm"></div>
-              <button type="button" id="login-phone-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Send OTP</button>
+              <button type="submit" id="login-phone-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Send OTP</button>
             </form>
             
             <div class="mt-6 text-center">
@@ -567,7 +559,7 @@
                 <input type="text" id="signup-email-otp" maxlength="6" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-center text-xl tracking-widest" placeholder="• • • • • •">
               </div>
               <div id="signup-email-error" class="hidden text-red-600 text-sm"></div>
-              <button type="button" id="signup-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Sign Up</button>
+              <button type="submit" id="signup-email-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Sign Up</button>
             </form>
             
             <!-- Phone Signup -->
@@ -798,47 +790,9 @@
       
       <!-- Toast Container -->
       <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-      <!-- === LOGIN / WALLET SECTION (paste here after Toast Container) === -->
-
-<!-- AUTH / LOGIN -->
-<div id="auth-container" class="p-4 bg-white rounded shadow max-w-md mx-auto mt-4">
-  <h2 class="text-xl font-bold mb-2">Sign In / Sign Up</h2>
-  <input type="email" id="email" placeholder="Enter your email" class="border p-2 w-full mb-2"/>
-  <input type="text" id="referral" placeholder="Referral Code (optional)" class="border p-2 w-full mb-2"/>
-  <button id="loginBtn" class="bg-blue-500 text-white px-4 py-2 rounded">Sign In / Sign Up</button>
-  <p id="login-msg" class="mt-2 text-red-500"></p>
-</div>
-
-<!-- WALLET -->
-<div id="wallet-container" class="p-4 bg-white rounded shadow max-w-2xl mx-auto mt-4" style="display:none;">
-  <h2 class="text-xl font-bold mb-2">My Wallet</h2>
-  <table class="table-auto border-collapse border border-gray-300 w-full">
-    <thead>
-      <tr>
-        <th class="border px-2 py-1">User ID</th>
-        <th class="border px-2 py-1">Balance</th>
-      </tr>
-    </thead>
-    <tbody id="walletTable"></tbody>
-  </table>
-
-  <!-- Withdraw -->
-  <div class="mt-4">
-    <input type="number" id="withdrawAmount" placeholder="Amount to withdraw" class="border p-2 mr-2"/>
-    <button id="withdrawBtn" class="bg-red-500 text-white px-4 py-2 rounded">Withdraw</button>
-    <p id="withdrawMsg" class="mt-2 text-red-500"></p>
-  </div>
-
-  <!-- Deposit / UPI Payment -->
-  <div class="mt-4">
-    <h3 class="font-bold mb-2">Deposit via UPI</h3>
-    <div class="flex gap-2">
-      <button class="upi-btn" data-app="gpay"><img src="gpay_logo.png" alt="Google Pay" class="h-10"/></button>
-      <button class="upi-btn" data-app="phonepe"><img src="phonepe_logo.png" alt="PhonePe" class="h-10"/></button>
-      <button class="upi-btn" data-app="paytm"><img src="paytm_logo.png" alt="Paytm" class="h-10"/></button>
+      
     </div>
-    <p id="depositMsg" class="mt-2 text-green-600"></p>
-    </div>
+    
   </div>
 
   <script>
@@ -1022,22 +976,33 @@
       btn.disabled = true;
       btn.textContent = 'Logging in...';
       
-      const { data, error } = await supabase.auth.signInWithPassword({
-  email: email,
-  password: password
-});
-
-if (error) {
-  errorEl.textContent = error.message;
-  errorEl.classList.remove('hidden');
-  btn.disabled = false;
-  btn.textContent = 'Login';
-  return;
-}
-
-// Success
-window.location.href = "dashboard.html";
-  
+      const user = allData.find(d => d.type === 'user' && d.email === email);
+      
+      if (!user) {
+        errorEl.textContent = 'Account not found. Please sign up.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+      }
+      
+      if (user.password_hash !== hashPassword(password)) {
+        errorEl.textContent = 'Incorrect password. Please try again.';
+        errorEl.classList.remove('hidden');
+        btn.disabled = false;
+        btn.textContent = 'Login';
+        return;
+      }
+      
+      currentUser = user;
+      closeModal('login');
+      updateUserUI();
+      showToast('Welcome back! Login successful.', 'success');
+      
+      btn.disabled = false;
+      btn.textContent = 'Login';
+    }
+    
     async function handlePhoneLogin(event) {
       event.preventDefault();
       
@@ -1788,180 +1753,76 @@ window.location.href = "dashboard.html";
       });
     });
   </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cf3f091440c4838',t:'MTc3MTMxNzIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9cf3f091440c4838',t:'MTc3MTMxNzIwNS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
 <script>
-  const supabaseClient = window.supabase.createClient(
+document.addEventListener("DOMContentLoaded", function () {
+
+  const { createClient } = supabase;
+
+  const supabaseClient = createClient(
     "https://vwsbxvpghoolfqyxyovf.supabase.co",
     "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
   );
 
-  window.supabase = supabaseClient;
-  // Forgot Password
-const forgotPasswordLink = document.getElementById("forgot-password-link");
+  const emailInput = document.getElementById("email-input");
+  const otpInput = document.getElementById("otp-input");
+  const sendOtpBtn = document.getElementById("send-otp-btn");
+  const verifyOtpBtn = document.getElementById("verify-otp-btn");
 
-if (forgotPasswordLink) {
-  forgotPasswordLink.addEventListener("click", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("login-email").value;
-    if (!email) return alert("Enter your email in the email field first!");
-
-    try {
-      const { data, error } = await window.supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.href // stay on same page
-      });
-
-      if (error) throw error;
-      alert("Password reset link sent! Check your email.");
-    } catch (err) {
-      alert("Error: " + err.message);
-    }
-  });
-}
-</script>
-    <script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  const signupBtn = document.getElementById("signup-email-btn");
-
-  if (signupBtn) {
-    signupBtn.addEventListener("click", async function(e) {
-
-      e.preventDefault();
-      e.stopPropagation();
-
-      const emailInput = document.getElementById("signup-email");
-      const email = emailInput ? emailInput.value : null;
-
-      if (!email) {
-        alert("Enter your email");
-        return;
-      }
-
-      alert("Trying Supabase...");
-      <script>
-document.addEventListener("DOMContentLoaded", function () {
-
-  const continueBtn = document.getElementById("signup-email-btn");
-  const verifyBtn   = document.getElementById("verify-otp-btn");
-
-  const emailInput  = document.getElementById("signup-email");
-  const otpInput    = document.getElementById("otp-input");
-
-  // STEP 1: Send OTP
-  continueBtn.addEventListener("click", async function(e) {
-    e.preventDefault();
-
-    const email = emailInput.value;
+  // Send OTP
+  sendOtpBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
 
     if (!email) {
-      alert("Enter your email");
+      alert("Enter email first");
       return;
     }
 
-    const { error } = await window.supabase.auth.signInWithOtp({
-      email: email,
-      options: {
-        shouldCreateUser: true
-      }
+    const { error } = await supabaseClient.auth.signInWithOtp({
+      email: email
     });
 
     if (error) {
       alert(error.message);
     } else {
-      alert("OTP sent to your email!");
-
-      // Show OTP fields
-      otpInput.style.display = "block";
-      verifyBtn.style.display = "block";
+      alert("OTP sent to your email");
     }
   });
 
-  // STEP 2: Verify OTP
-  verifyBtn.addEventListener("click", async function(e) {
-    e.preventDefault();
+  // Verify OTP
+  verifyOtpBtn.addEventListener("click", async () => {
+    const email = emailInput.value.trim();
+    const token = otpInput.value.trim();
 
-    const email = emailInput.value;
-    const otp   = otpInput.value;
-
-    if (!otp) {
+    if (!token) {
       alert("Enter OTP");
       return;
     }
 
-    const { error } = await window.supabase.auth.verifyOtp({
+    const { error } = await supabaseClient.auth.verifyOtp({
       email: email,
-      token: otp,
+      token: token,
       type: "email"
     });
 
     if (error) {
-      alert("Invalid OTP");
+      alert(error.message);
     } else {
-      alert("Login successful!");
-
-      // You can now show wallet/profile section here
+      alert("Login successful");
+      loadUserData();
     }
   });
 
-});
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-<script>
-document.addEventListener("DOMContentLoaded", () => {
+  async function loadUserData() {
+    const { data: { user } } = await supabaseClient.auth.getUser();
 
-  // ---------------------------
-  // Grab buttons and inputs
-  // ---------------------------
-  const loginBtn = document.getElementById("login-email-btn");
-  const signupBtn = document.getElementById("signup-email-btn");
-
-  const loginEmail = document.getElementById("login-email");
-  const loginPassword = document.getElementById("login-password");
-
-  const signupEmail = document.getElementById("signup-email");
-  const signupPassword = document.getElementById("signup-password");
-  const signupOtp = document.getElementById("signup-email-otp");
-
-  // ---------------------------
-  // Prevent default form submission
-  // ---------------------------
-  function safeClick(btn, callback) {
-    if(btn) {
-      btn.addEventListener("click", (e) => {
-        e.preventDefault(); // Stop page reload
-        callback();
-      });
+    if (user) {
+      console.log("User ID:", user.id);
+      // Load wallet + transactions here
     }
   }
 
-  // ---------------------------
-  // Login button
-  // ---------------------------
-  safeClick(loginBtn, () => {
-    if(!loginEmail.value) return alert("Enter login email!");
-    if(!loginPassword.value) return alert("Enter login password!");
-    alert("Login clicked!\nEmail: " + loginEmail.value);
-  });
-
-  // ---------------------------
-  // Signup button with OTP
-  // ---------------------------
-  safeClick(signupBtn, () => {
-    if(!signupEmail.value) return alert("Enter signup email!");
-    if(!signupPassword.value) return alert("Enter signup password!");
-    if(!signupOtp.value) return alert("Enter OTP!");
-    alert(
-      "Signup clicked!\nEmail: " + signupEmail.value + 
-      "\nOTP: " + signupOtp.value
-    );
-  });
-
 });
 </script>
-      <script>
-      </script>
-    </body>
+</body>
 </html>
