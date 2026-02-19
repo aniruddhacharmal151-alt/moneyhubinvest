@@ -1510,43 +1510,7 @@ async function handleWithdraw(event) {
 
   document.getElementById("withdrawAmount").value = "";
 }
-      const txResult = await window.dataSdk.create({
-        type: 'transaction',
-        transaction_type: 'withdrawal',
-        amount: amount,
-        payment_method: `UPI: ${upi}`,
-        status: 'pending',
-        user_id: currentUser.__backendId,
-        plan_name: '',
-        days: 0,
-        created_at: new Date().toISOString()
-      });
-      
-      if (txResult.isOk) {
-        const newBalance = (currentUser.balance || 0) - amount;
-        await window.dataSdk.update({
-          ...currentUser,
-          balance: newBalance
-        });
-        
-        successEl.textContent = `Withdrawal of ${formatCurrency(amount)} initiated! Processing within 24-48 hours.`;
-        successEl.classList.remove('hidden');
-        errorEl.classList.add('hidden');
-        showToast('Withdrawal request submitted!', 'success');
-        
-        setTimeout(() => {
-          closeModal('withdraw');
-          document.getElementById('withdraw-form').reset();
-        }, 2000);
-      } else {
-        errorEl.textContent = 'Withdrawal failed. Please try again.';
-        errorEl.classList.remove('hidden');
-      }
-      
-      btn.disabled = false;
-      btn.textContent = 'Withdraw Now';
-    }
-    
+       
     // Investment Functions
     function checkAuthAndInvest(slotName, minAmount, days) {
       if (!currentUser) {
