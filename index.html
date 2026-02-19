@@ -1824,5 +1824,67 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 </script>
+  <script>
+document.addEventListener("DOMContentLoaded", function () {
+
+  const supabase = window.supabase.createClient(
+    "https://vwsbxvpghoolfqyxyovf.supabase.co",
+    "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
+  );
+
+  // ===== SIGNUP OTP =====
+  const signupBtn = document.getElementById("signup-email-btn");
+  const signupEmail = document.getElementById("signup-email");
+  const signupOtp = document.getElementById("signup-email-otp");
+
+  if (signupBtn) {
+    signupBtn.addEventListener("click", async function () {
+      const email = signupEmail.value.trim();
+
+      if (!email) {
+        alert("Enter email");
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email
+      });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("OTP sent to your email");
+      }
+    });
+  }
+
+  // ===== LOGIN OTP =====
+  const loginBtn = document.getElementById("login-email-btn");
+  const loginEmail = document.getElementById("login-email");
+  const loginOtp = document.getElementById("otp-input");
+
+  if (loginBtn) {
+    loginBtn.addEventListener("click", async function () {
+      const email = loginEmail.value.trim();
+
+      if (!email) {
+        alert("Enter email");
+        return;
+      }
+
+      const { error } = await supabase.auth.signInWithOtp({
+        email: email
+      });
+
+      if (error) {
+        alert(error.message);
+      } else {
+        alert("OTP sent to your email");
+      }
+    });
+  }
+
+});
+</script>
 </body>
 </html>
