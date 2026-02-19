@@ -1444,52 +1444,72 @@
 
   document.getElementById("deposit-form").reset();
 }
-    
-    async function handleWithdraw(event) {
-      event.preventDefault();
-      
-      if (!currentUser) {
-        showToast('Please login to withdraw.', 'error');
-        closeModal('withdraw');
-        openModal('login');
-        return;
-      }
-      
-      const amount = parseInt(document.getElementById('withdraw-amount').value);
-      const upi = document.getElementById('withdraw-upi').value.trim();
-      const errorEl = document.getElementById('withdraw-error');
-      const successEl = document.getElementById('withdraw-success');
-      const btn = document.getElementById('withdraw-btn');
-      
-      if (amount < 1000) {
-        errorEl.textContent = 'Minimum withdrawal amount is ₹1,000.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      
-      if (amount > (currentUser.balance || 0)) {
-        errorEl.textContent = 'Insufficient balance.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      
-      if (!upi.includes('@')) {
-        errorEl.textContent = 'Please enter a valid UPI ID.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      
-      btn.disabled = true;
-      btn.textContent = 'Processing...';
-      
-      if (allData.length >= 999) {
-        errorEl.textContent = 'System is at capacity. Please try again later.';
-        errorEl.classList.remove('hidden');
-        btn.disabled = false;
-        btn.textContent = 'Withdraw Now';
-        return;
-      }
-      
+  
+    let currentBalance = 0;
+
+async function handleWithdraw(event) {
+  event.preventDefault();
+
+  const amount = parseFloat(document.getElementById("withdrawAmount").value);
+  const msgEl = document.getElementById("withdrawMsg");
+
+  msgEl.textContent = "";
+
+  if (!amount || amount <= 0) {
+    msgEl.textContent = "Enter valid amount.";
+    return;
+  }
+
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    msgEl.textContent = "Please login first.";
+    return;
+  }
+
+  // Get wallet
+  const { data: wallet } = await supabase
+    .from("wallets")
+    .select("*")
+    .eq("user_id", user.id)
+    .single();
+
+  if (!wallet || wallet.balance < amount) {
+    msgEl.textContent = "Insufficient balance.";
+    return;
+  }
+
+  const newBalance = wallet.balance - amount;
+
+  // Insert withdrawal transaction
+  const { error: txError } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: user.id,
+      transaction_type: "withdrawal",
+      amount: amount,
+      payment_method: "UPI",
+      status: "pending"
+    });
+
+  if (txError) {
+    msgEl.textContent = "Withdrawal failed.";
+    return;
+  }
+
+  // Update wallet
+  await supabase
+    .from("wallets")
+    .update({ balance: newBalance })
+    .eq("user_id", user.id);
+
+  currentBalance = newBalance;
+
+  msgEl.style.color = "green";
+  msgEl.textContent = "Withdrawal request submitted.";
+
+  document.getElementById("withdrawAmount").value = "";
+}
       const txResult = await window.dataSdk.create({
         type: 'transaction',
         transaction_type: 'withdrawal',
