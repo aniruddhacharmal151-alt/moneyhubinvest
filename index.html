@@ -820,8 +820,68 @@
         emailForm.classList.add('hidden');
       }
     }
+async function createInvestment(planName, amount, days) {
 
-    // Deposit Functions
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    alert("Please login first.");
+    return;
+  }
+
+  if (!amount || amount <= 0) {
+    alert("Invalid amount");
+    return;
+  }
+
+  // 1️⃣ Get current wallet balance
+  const { data: wallet, error: walletError } = await supabase
+    .from("wallets")
+    .select("balance")
+    .eq("user_id", user.id)
+    .single();
+
+  if (walletError || !wallet) {
+    alert("Wallet not found");
+    return;
+  }
+
+  if (wallet.balance < amount) {
+    alert("Insufficient balance");
+    return;
+  }
+
+  const newBalance = wallet.balance - amount;
+
+  // 2️⃣ Insert transaction
+  const { error: txError } = await supabase
+    .from("transactions")
+    .insert({
+      user_id: user.id,
+      transaction_type: "investment",
+      amount: amount,
+      status: "completed",
+      plan_name: planName,
+      days: days
+    });
+
+  if (txError) {
+    alert("Investment failed");
+    return;
+  }
+
+  // 3️⃣ Update wallet balance
+  await supabase
+    .from("wallets")
+    .update({ balance: newBalance })
+    .eq("user_id", user.id);
+
+  alert("Investment successful!");
+
+  loadWallet();
+  loadTransactions();
+}
+    
+  // Deposit Functions
     function checkAuthAndDeposit(amount) {
       if (!currentUser) {
         openModal('signup');
@@ -1061,6 +1121,18 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+});
+  let currentUser = null;
+
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session && session.user) {
+    currentUser = session.user;
+    console.log("Logged in:", currentUser.id);
+    loadUserWallet();
+  } else {
+    currentUser = null;
+    console.log("User logged out");
+  }
 });
 </script>
 </body>
