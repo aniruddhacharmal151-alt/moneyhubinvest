@@ -1069,6 +1069,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const verifyOtpBtn = document.getElementById("verify-otp-btn");
 
   // Send OTP
+  if (sendOtpBtn) {
   sendOtpBtn.addEventListener("click", async () => {
     const email = emailInput.value.trim();
 
@@ -1089,6 +1090,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Verify OTP
+  if (verifyOtpBtn) {
   verifyOtpBtn.addEventListener("click", async () => {
     const email = emailInput.value.trim();
     const token = otpInput.value.trim();
