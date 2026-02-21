@@ -733,6 +733,8 @@
   </div>
 
 <script>
+  let currentUser = null;
+  
     function formatCurrency(amount) {
       return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -820,6 +822,21 @@
         emailForm.classList.add('hidden');
       }
     }
+  
+  function openModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.style.display = "block";
+  }
+}
+
+function closeModal(id) {
+  const modal = document.getElementById(id);
+  if (modal) {
+    modal.style.display = "none";
+  }
+}
+  
 async function createInvestment(planName, amount, days) {
 
   const { data: { user } } = await supabase.auth.getUser();
