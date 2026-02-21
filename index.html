@@ -733,6 +733,9 @@
   </div>
 
 <script>
+  window.onerror = function(message) {
+  alert("JS Error: " + message);
+};
   let currentUser = null;
   
     function formatCurrency(amount) {
