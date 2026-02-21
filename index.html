@@ -733,8 +733,8 @@
   </div>
 
 <script>
-  window.onerror = function(message) {
-  alert("JS Error: " + message);
+window.onerror = function(message, source, lineno) {
+  alert("Error at line: " + lineno + " → " + message);
 };
   let currentUser = null;
   
