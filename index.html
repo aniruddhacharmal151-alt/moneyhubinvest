@@ -1076,14 +1076,15 @@ async function handleWithdraw(event) {
 <script>
   let currentUser = null;
   
-document.addEventListener("DOMContentLoaded", function () {
-
   const { createClient } = supabase;
 
   const supabaseClient = createClient(
     "https://vwsbxvpghoolfqyxyovf.supabase.co",
     "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
   );
+  
+document.addEventListener("DOMContentLoaded", function () {
+
 
   const emailInput = document.getElementById("email-input");
   const otpInput = document.getElementById("otp-input");
@@ -1140,8 +1141,7 @@ if (verifyOtpBtn) {
 
   });
 
-} // ✅ CLOSE IF BLOCK PROPERLY
-
+});
 
 async function loadUserData() {
 
@@ -1154,7 +1154,7 @@ async function loadUserData() {
 
 }
 
-supabase.auth.onAuthStateChange((event, session) => {
+supabaseClient.auth.onAuthStateChange((event, session) => {
   if (session && session.user) {
     currentUser = session.user;
     console.log("Logged in:", currentUser.id);
