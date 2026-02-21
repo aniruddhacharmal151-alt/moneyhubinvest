@@ -1112,8 +1112,10 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 
   // Verify OTP
-  if (verifyOtpBtn) {
+if (verifyOtpBtn) {
+
   verifyOtpBtn.addEventListener("click", async () => {
+
     const email = emailInput.value.trim();
     const token = otpInput.value.trim();
 
@@ -1134,18 +1136,22 @@ document.addEventListener("DOMContentLoaded", function () {
       alert("Login successful");
       loadUserData();
     }
+
   });
 
-  async function loadUserData() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
+} // ✅ CLOSE IF BLOCK PROPERLY
 
-    if (user) {
-      console.log("User ID:", user.id);
-      // Load wallet + transactions here
-    }
+
+async function loadUserData() {
+
+  const { data: { user } } = await supabaseClient.auth.getUser();
+
+  if (user) {
+    console.log("User ID:", user.id);
+    // Load wallet + transactions here
   }
 
-});
+}
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (session && session.user) {
