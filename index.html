@@ -1054,6 +1054,8 @@ async function handleWithdraw(event) {
     });
   </script>
 <script>
+  let currentUser = null;
+  
 document.addEventListener("DOMContentLoaded", function () {
 
   const { createClient } = supabase;
@@ -1124,7 +1126,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
 });
-  let currentUser = null;
 
 supabase.auth.onAuthStateChange((event, session) => {
   if (session && session.user) {
