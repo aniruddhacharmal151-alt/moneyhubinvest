@@ -996,6 +996,38 @@ async function createInvestment(planName, amount, days) {
   document.getElementById("deposit-form").reset();
 }
   
+  async function loadUserWallet() {
+
+  const { data, error } = await supabaseClient
+    .from("wallet")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .single();
+
+  if (error) {
+    console.log(error.message);
+    return;
+  }
+
+  document.getElementById("balance").innerText = data.balance;
+}
+
+  async function loadTransactions() {
+
+  const { data, error } = await supabaseClient
+    .from("transactions")
+    .select("*")
+    .eq("user_id", currentUser.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.log(error.message);
+    return;
+  }
+
+  console.log("Transactions:", data);
+}
+  
     let currentBalance = 0;
 
 async function handleWithdraw(event) {
@@ -1159,6 +1191,7 @@ supabaseClient.auth.onAuthStateChange((event, session) => {
     currentUser = session.user;
     console.log("Logged in:", currentUser.id);
     loadUserWallet();
+    loadTransactions();
   } else {
     currentUser = null;
     console.log("User logged out");
