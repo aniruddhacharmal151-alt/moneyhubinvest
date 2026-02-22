@@ -892,7 +892,7 @@ async function createInvestment(planName, amount, days) {
 
   // 3️⃣ Update wallet balance
   await supabase
-    .from("wallets")
+    .from("wallet")
     .update({ balance: newBalance })
     .eq("user_id", user.id);
 
@@ -978,7 +978,7 @@ async function createInvestment(planName, amount, days) {
 
   // 2️⃣ Get current wallet
   const { data: wallet } = await supabase
-    .from("wallets")
+    .from("wallet")
     .select("balance")
     .eq("user_id", user.id)
     .single();
@@ -987,7 +987,7 @@ async function createInvestment(planName, amount, days) {
 
   // 3️⃣ Update wallet balance
   await supabase
-    .from("wallets")
+    .from("wallet")
     .update({ balance: newBalance })
     .eq("user_id", user.id);
 
@@ -1052,7 +1052,7 @@ async function handleWithdraw(event) {
 
   // Get wallet
   const { data: wallet } = await supabase
-    .from("wallets")
+    .from("wallet")
     .select("*")
     .eq("user_id", user.id)
     .single();
@@ -1082,7 +1082,7 @@ async function handleWithdraw(event) {
 
   // Update wallet
   await supabase
-    .from("wallets")
+    .from("wallet")
     .update({ balance: newBalance })
     .eq("user_id", user.id);
 
