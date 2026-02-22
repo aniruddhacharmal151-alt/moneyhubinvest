@@ -620,7 +620,7 @@
               <div id="withdraw-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded"></div>
               <div id="withdraw-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded"></div>
               
-              <button type="button" id="withdraw-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Withdraw</button>
+              <button type="submit" id="withdraw-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Withdraw</button>
             </form>
           </div>
         </div>
@@ -733,10 +733,11 @@
   </div>
 
 <script>
+  let currentUser = null;
+  
 window.onerror = function(message, source, lineno) {
   alert("Error at line: " + lineno + " → " + message);
 };
-  let currentUser = null;
   
     function formatCurrency(amount) {
       return new Intl.NumberFormat('en-IN', {
@@ -950,7 +951,7 @@ async function createInvestment(planName, amount, days) {
     return;
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
 
   if (!user) {
     errorDiv.innerText = "You must be logged in.";
@@ -1009,7 +1010,8 @@ async function createInvestment(planName, amount, days) {
     return;
   }
 
-  document.getElementById("balance").innerText = data.balance;
+  document.getElementById("user-balance").innerText =
+  formatCurrency(data.balance);
 }
 
   async function loadTransactions() {
@@ -1028,12 +1030,10 @@ async function createInvestment(planName, amount, days) {
   console.log("Transactions:", data);
 }
   
-    let currentBalance = 0;
-
 async function handleWithdraw(event) {
   event.preventDefault();
 
-  const amount = parseFloat(document.getElementById("withdrawAmount").value);
+  const amount = parseFloat(document.getElementById("withdraw-Amount").value);
   const msgEl = document.getElementById("withdrawMsg");
 
   msgEl.textContent = "";
@@ -1043,7 +1043,7 @@ async function handleWithdraw(event) {
     return;
   }
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
 
   if (!user) {
     msgEl.textContent = "Please login first.";
@@ -1115,8 +1115,6 @@ async function handleWithdraw(event) {
     "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
   );
   
-  let currentUser = null;
-
 supabaseClient.auth.onAuthStateChange(async (event, session) => {
 
   if (session && session.user) {
@@ -1163,25 +1161,6 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 
 }
 document.addEventListener("DOMContentLoaded", function () {
-
-const depositBtn = document.getElementById("deposit-btn");
-
-if (depositBtn) {
-  depositBtn.addEventListener("click", function () {
-    checkAuthAndDeposit(100);
-  });
-}
-  
-  const withdrawBtn = document.getElementById("withdraw-btn");
-
-if (withdrawBtn) {
-  withdrawBtn.addEventListener("click", function () {
-
-    const amount = 100; // or get from input field
-
-    handleWithdrawal(amount);
-
-  });
 }
   
   const emailInput = document.getElementById("email-input");
