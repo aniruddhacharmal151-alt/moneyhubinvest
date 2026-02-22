@@ -1107,7 +1107,7 @@ async function handleWithdraw(event) {
   </script>
 <script>
   let currentUser = null;
-  
+
   const { createClient } = supabase;
 
   const supabaseClient = createClient(
@@ -1115,6 +1115,53 @@ async function handleWithdraw(event) {
     "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
   );
   
+  let currentUser = null;
+
+supabaseClient.auth.onAuthStateChange(async (event, session) => {
+
+  if (session && session.user) {
+    currentUser = session.user;
+    console.log("Logged in:", currentUser.id);
+
+    await ensureWalletExists(currentUser.id);
+    loadUserWallet();
+
+  } else {
+    currentUser = null;
+    console.log("User logged out");
+  }
+
+});
+  async function ensureWalletExists(userId) {
+
+  const { data, error } = await supabaseClient
+    .from("wallet")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (!data) {
+    await supabaseClient
+      .from("wallet")
+      .insert([{ user_id: userId, balance: 0 }]);
+  }
+
+}
+  async function loadUserWallet() {
+
+  if (!currentUser) return;
+
+  const { data, error } = await supabaseClient
+    .from("wallet")
+    .select("balance")
+    .eq("user_id", currentUser.id)
+    .single();
+
+  if (data) {
+    document.getElementById("balance").innerText = data.balance;
+  }
+
+}
 document.addEventListener("DOMContentLoaded", function () {
 
 const depositBtn = document.getElementById("deposit-btn");
@@ -1204,18 +1251,6 @@ async function loadUserData() {
   }
 
 }
-
-supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (session && session.user) {
-    currentUser = session.user;
-    console.log("Logged in:", currentUser.id);
-    loadUserWallet();
-    loadTransactions();
-  } else {
-    currentUser = null;
-    console.log("User logged out");
-  }
-});
 </script>
 </body>
 </html>
