@@ -722,114 +722,6 @@
   </div>
 
 <script>
-
-let signupEmailTemp = null;
-
-// ================= MODAL CONTROL =================
-
-function openAuthModal() {
-  document.getElementById("auth-modal").classList.remove("hidden");
-}
-
-function closeAuthModal() {
-  document.getElementById("auth-modal").classList.add("hidden");
-}
-
-function showLogin() {
-  document.getElementById("login-section").classList.remove("hidden");
-  document.getElementById("signup-section").classList.add("hidden");
-
-  document.getElementById("tab-login").classList.add("border-blue-600");
-  document.getElementById("tab-signup").classList.remove("border-blue-600");
-}
-
-function showSignup() {
-  document.getElementById("login-section").classList.add("hidden");
-  document.getElementById("signup-section").classList.remove("hidden");
-
-  document.getElementById("tab-login").classList.remove("border-blue-600");
-  document.getElementById("tab-signup").classList.add("border-blue-600");
-}
-
-// ================= LOGIN =================
-
-async function handleLogin(e) {
-  e.preventDefault();
-
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
-
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) return alert(error.message);
-
-  alert("Login successful");
-  closeAuthModal();
-}
-
-// ================= SIGNUP STEP 1 =================
-
-async function sendSignupOtp() {
-  const email = document.getElementById("signup-email").value;
-  if (!email) return alert("Enter email");
-
-  signupEmailTemp = email;
-
-  const { error } = await supabaseClient.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: true }
-  });
-
-  if (error) return alert(error.message);
-
-  document.getElementById("signup-step-email").classList.add("hidden");
-  document.getElementById("signup-step-otp").classList.remove("hidden");
-
-  alert("OTP sent to your email");
-}
-
-// ================= SIGNUP STEP 2 =================
-
-async function verifySignupOtp() {
-  const otp = document.getElementById("signup-otp").value;
-
-  const { error } = await supabaseClient.auth.verifyOtp({
-    email: signupEmailTemp,
-    token: otp,
-    type: "email"
-  });
-
-  if (error) return alert(error.message);
-
-  document.getElementById("signup-step-otp").classList.add("hidden");
-  document.getElementById("signup-step-password").classList.remove("hidden");
-
-  alert("Email verified");
-}
-
-// ================= SIGNUP STEP 3 =================
-
-async function finishSignup() {
-  const password = document.getElementById("signup-password").value;
-
-  const { error } = await supabaseClient.auth.updateUser({
-    password
-  });
-
-  if (error) return alert(error.message);
-
-  alert("Account created successfully");
-  closeAuthModal();
-}
-<script>
-
-// ==========================================
-// SUPABASE CONFIG
-// ==========================================
-
 const { createClient } = supabase;
 
 const supabaseClient = createClient(
@@ -837,127 +729,359 @@ const supabaseClient = createClient(
   "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
 );
 
-let currentUser = null;
+const state = {
+  currentUser: null,
+  signupEmailTemp: null
+};
 
-// ==========================================
-// AUTH STATE LISTENER
-// ==========================================
+function getEl(id) {
+  return document.getElementById(id);
+}
 
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
+function formatCurrency(amount) {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0
+  }).format(Number(amount) || 0);
+}
 
-  if (session?.user) {
-    currentUser = session.user;
-    await ensureWalletExists();
-    await loadWallet();
-  } else {
-    currentUser = null;
-  }
+function showToast(message, type = "info") {
+  const toastContainer = getEl("toast-container");
+  if (!toastContainer) return;
 
-});
+  const toast = document.createElement("div");
+  const toneClass = type === "error" ? "bg-red-600" : type === "success" ? "bg-green-600" : "bg-gray-800";
+  toast.className = `${toneClass} text-white px-4 py-2 rounded-lg shadow-lg pointer-events-auto`;
+  toast.textContent = message;
 
-// ==========================================
-// ENSURE WALLET EXISTS
-// ==========================================
+  toastContainer.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
 
-async function ensureWalletExists() {
-
-  const { data } = await supabaseClient
-    .from("wallet")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (!data) {
-    await supabaseClient.from("wallet").insert({
-      user_id: currentUser.id,
-      balance: 0
-    });
+function updateAuthUI(isLoggedIn) {
+  getEl("auth-buttons")?.classList.toggle("hidden", isLoggedIn);
+  getEl("user-menu")?.classList.toggle("hidden", !isLoggedIn);
+  getEl("user-menu")?.classList.toggle("flex", isLoggedIn);
+  if (!isLoggedIn) {
+    getEl("user-balance").textContent = formatCurrency(0);
+    getEl("withdraw-balance").textContent = formatCurrency(0);
   }
 }
 
-// ==========================================
-// LOAD WALLET BALANCE
-// ==========================================
+function openAuthModal() {
+  getEl("auth-modal")?.classList.remove("hidden");
+}
 
-async function loadWallet() {
+function closeAuthModal() {
+  getEl("auth-modal")?.classList.add("hidden");
+}
 
-  if (!currentUser) return;
+function showLogin() {
+  getEl("login-section")?.classList.remove("hidden");
+  getEl("signup-section")?.classList.add("hidden");
+  getEl("tab-login")?.classList.add("border-blue-600");
+  getEl("tab-signup")?.classList.remove("border-blue-600");
+}
 
-  const { data } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", currentUser.id)
-    .single();
+function showSignup() {
+  getEl("login-section")?.classList.add("hidden");
+  getEl("signup-section")?.classList.remove("hidden");
+  getEl("tab-login")?.classList.remove("border-blue-600");
+  getEl("tab-signup")?.classList.add("border-blue-600");
+}
 
-  if (data) {
+function openModal(type) {
+  if (type === "login") {
+    openAuthModal();
+    showLogin();
+    return;
+  }
+  if (type === "signup") {
+    openAuthModal();
+    showSignup();
+    return;
+  }
 
-    const formatted = formatCurrency(data.balance);
+  const modal = getEl(`${type}-modal`);
+  if (modal) modal.classList.remove("hidden");
 
-    const balanceDisplay = document.getElementById("withdraw-balance");
-    if (balanceDisplay) balanceDisplay.innerText = formatted;
-
+  if (type === "withdraw") {
+    loadWallet();
   }
 }
 
-// ==========================================
-// DEPOSIT SYSTEM
-// ==========================================
+function closeModal(type) {
+  const modal = getEl(`${type}-modal`);
+  if (modal) modal.classList.add("hidden");
+}
 
-async function handleDeposit(event) {
+function toggleUserDropdown() {
+  getEl("user-dropdown")?.classList.toggle("hidden");
+}
+
+function showSection(sectionName) {
+  const transactions = getEl("transactions-section");
+  const referral = getEl("referral-section");
+  const main = getEl("main-content");
+
+  transactions?.classList.add("hidden");
+  referral?.classList.add("hidden");
+  main?.classList.add("hidden");
+
+  if (sectionName === "transactions") {
+    transactions?.classList.remove("hidden");
+  }
+  if (sectionName === "referral") {
+    referral?.classList.remove("hidden");
+    loadReferralData();
+  }
+}
+
+function hideTransactions() {
+  getEl("transactions-section")?.classList.add("hidden");
+  getEl("main-content")?.classList.remove("hidden");
+}
+
+function hideReferral() {
+  getEl("referral-section")?.classList.add("hidden");
+  getEl("main-content")?.classList.remove("hidden");
+}
+
+function filterTransactions() {
+  // Placeholder: kept for current UI controls.
+}
+
+function copyReferralCode() {
+  const code = getEl("referral-code")?.textContent?.trim();
+  if (!code || code === "—") {
+    showToast("No referral code available", "error");
+    return;
+  }
+  navigator.clipboard.writeText(code)
+    .then(() => showToast("Referral code copied", "success"))
+    .catch(() => showToast("Unable to copy referral code", "error"));
+}
+
+function setDepositAmount(amount) {
+  getEl("deposit-amount").value = amount;
+}
+
+function selectPaymentMethod(method) {
+  getEl("deposit-method").value = method;
+  document.querySelectorAll(".payment-option").forEach((el) => el.classList.remove("selected"));
+  document.querySelector(`button[onclick="selectPaymentMethod('${method}')"]`)?.classList.add("selected");
+}
+
+function checkAuthAndDeposit(amount) {
+  if (!state.currentUser) {
+    openModal("login");
+    showToast("Please login to continue", "error");
+    return;
+  }
+  setDepositAmount(amount);
+  openModal("deposit");
+}
+
+async function handleLogin(event) {
   event.preventDefault();
+  const email = getEl("login-email").value.trim();
+  const password = getEl("login-password").value;
 
-  if (!currentUser) {
-    showToast("Please login first", "error");
+  const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+  if (error) {
+    showToast(error.message, "error");
     return;
   }
 
-  const amount = parseFloat(document.getElementById("deposit-amount").value);
+  showToast("Login successful", "success");
+  closeAuthModal();
+}
 
-  if (!amount || amount < 2000) {
-    showToast("Minimum deposit ₹2000", "error");
+async function sendSignupOtp() {
+  const email = getEl("signup-email").value.trim();
+  if (!email) {
+    showToast("Enter email", "error");
     return;
   }
 
-  const { data: wallet } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  const newBalance = (wallet?.balance || 0) + amount;
-
-  const { error } = await supabaseClient
-    .from("wallet")
-    .update({ balance: newBalance })
-    .eq("user_id", currentUser.id);
+  state.signupEmailTemp = email;
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true }
+  });
 
   if (error) {
     showToast(error.message, "error");
     return;
   }
 
-  showToast("Deposit successful", "success");
-  document.getElementById("deposit-form").reset();
-  loadWallet();
+  getEl("signup-step-email")?.classList.add("hidden");
+  getEl("signup-step-otp")?.classList.remove("hidden");
+  showToast("OTP sent to your email", "success");
 }
 
-// ==========================================
-// WITHDRAW (ADMIN APPROVAL SYSTEM)
-// ==========================================
+async function verifySignupOtp() {
+  const otp = getEl("signup-otp").value.trim();
+  const email = state.signupEmailTemp;
 
-async function handleWithdraw(event) {
+  if (!email || !otp) {
+    showToast("Email and OTP are required", "error");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.verifyOtp({
+    email,
+    token: otp,
+    type: "email"
+  });
+
+  if (error) {
+    showToast(error.message, "error");
+    return;
+  }
+
+  getEl("signup-step-otp")?.classList.add("hidden");
+  getEl("signup-step-password")?.classList.remove("hidden");
+  showToast("Email verified", "success");
+}
+
+async function finishSignup() {
+  const password = getEl("signup-password").value;
+  if (!password || password.length < 6) {
+    showToast("Password must be at least 6 characters", "error");
+    return;
+  }
+
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  if (error) {
+    showToast(error.message, "error");
+    return;
+  }
+
+  showToast("Account created successfully", "success");
+  closeAuthModal();
+}
+
+async function logout() {
+  await supabaseClient.auth.signOut();
+  showToast("Logged out", "success");
+}
+
+async function ensureWalletExists() {
+  if (!state.currentUser) return;
+
+  const { data, error } = await supabaseClient
+    .from("wallet")
+    .select("user_id")
+    .eq("user_id", state.currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    showToast(error.message, "error");
+    return;
+  }
+
+  if (!data) {
+    const { error: insertError } = await supabaseClient.from("wallet").insert({
+      user_id: state.currentUser.id,
+      balance: 0
+    });
+
+    if (insertError) showToast(insertError.message, "error");
+  }
+}
+
+async function loadWallet() {
+  if (!state.currentUser) return;
+
+  const { data, error } = await supabaseClient
+    .from("wallet")
+    .select("balance")
+    .eq("user_id", state.currentUser.id)
+    .maybeSingle();
+
+  if (error) {
+    showToast(error.message, "error");
+    return;
+  }
+
+  const balance = data?.balance || 0;
+  const formatted = formatCurrency(balance);
+  getEl("user-balance").textContent = formatted;
+  getEl("withdraw-balance").textContent = formatted;
+}
+
+async function handleDeposit(event) {
   event.preventDefault();
 
-  if (!currentUser) {
+  if (!state.currentUser) {
     showToast("Please login first", "error");
     return;
   }
 
-  const amount = parseFloat(document.getElementById("withdraw-amount").value);
-  const upi = document.getElementById("withdraw-upi").value;
+  const amount = Number(getEl("deposit-amount").value);
+  const method = getEl("deposit-method").value;
+  const errorBox = getEl("deposit-error");
+  const successBox = getEl("deposit-success");
 
-  const errorBox = document.getElementById("withdraw-error");
-  const successBox = document.getElementById("withdraw-success");
+  errorBox.classList.add("hidden");
+  successBox.classList.add("hidden");
+
+  if (!amount || amount < 2000) {
+    errorBox.textContent = "Minimum deposit ₹2000";
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  if (!method) {
+    errorBox.textContent = "Please select a payment method";
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  const { data: wallet, error: walletError } = await supabaseClient
+    .from("wallet")
+    .select("balance")
+    .eq("user_id", state.currentUser.id)
+    .single();
+
+  if (walletError) {
+    errorBox.textContent = walletError.message;
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  const { error: updateError } = await supabaseClient
+    .from("wallet")
+    .update({ balance: Number(wallet.balance || 0) + amount })
+    .eq("user_id", state.currentUser.id);
+
+  if (updateError) {
+    errorBox.textContent = updateError.message;
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  successBox.textContent = "Deposit successful";
+  successBox.classList.remove("hidden");
+  getEl("deposit-form").reset();
+  document.querySelectorAll(".payment-option").forEach((el) => el.classList.remove("selected"));
+  await loadWallet();
+}
+
+async function handleWithdraw(event) {
+  event.preventDefault();
+
+  if (!state.currentUser) {
+    showToast("Please login first", "error");
+    return;
+  }
+
+  const amount = Number(getEl("withdraw-amount").value);
+  const upi = getEl("withdraw-upi").value.trim();
+  const errorBox = getEl("withdraw-error");
+  const successBox = getEl("withdraw-success");
 
   errorBox.classList.add("hidden");
   successBox.classList.add("hidden");
@@ -968,27 +1092,36 @@ async function handleWithdraw(event) {
     return;
   }
 
-  const { data: wallet } = await supabaseClient
+  if (!upi) {
+    errorBox.textContent = "UPI ID is required";
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  const { data: wallet, error: walletError } = await supabaseClient
     .from("wallet")
     .select("balance")
-    .eq("user_id", currentUser.id)
+    .eq("user_id", state.currentUser.id)
     .single();
 
-  if (!wallet || wallet.balance < amount) {
+  if (walletError) {
+    errorBox.textContent = walletError.message;
+    errorBox.classList.remove("hidden");
+    return;
+  }
+
+  if (!wallet || Number(wallet.balance) < amount) {
     errorBox.textContent = "Insufficient balance";
     errorBox.classList.remove("hidden");
     return;
   }
 
-  // Insert pending withdrawal
-  const { error } = await supabaseClient
-    .from("withdrawals")
-    .insert({
-      user_id: currentUser.id,
-      amount: amount,
-      upi_id: upi,
-      status: "pending"
-    });
+  const { error } = await supabaseClient.from("withdrawals").insert({
+    user_id: state.currentUser.id,
+    amount,
+    upi_id: upi,
+    status: "pending"
+  });
 
   if (error) {
     errorBox.textContent = error.message;
@@ -998,82 +1131,108 @@ async function handleWithdraw(event) {
 
   successBox.textContent = "Withdrawal request submitted. Awaiting admin approval.";
   successBox.classList.remove("hidden");
-
-  document.getElementById("withdraw-form").reset();
+  getEl("withdraw-form").reset();
 }
 
-// ==========================================
-// ADMIN APPROVAL FUNCTION
-// (Use in admin panel)
-// ==========================================
-
 async function approveWithdrawal(withdrawalId) {
-
-  const { data: withdrawal } = await supabaseClient
+  const { data: withdrawal, error: withdrawalError } = await supabaseClient
     .from("withdrawals")
-    .select("*")
+    .select("id, user_id, amount, status")
     .eq("id", withdrawalId)
     .single();
 
-  if (!withdrawal) return;
+  if (withdrawalError || !withdrawal) {
+    showToast(withdrawalError?.message || "Withdrawal not found", "error");
+    return;
+  }
 
-  const { data: wallet } = await supabaseClient
+  if (withdrawal.status !== "pending") {
+    showToast("Withdrawal already processed", "error");
+    return;
+  }
+
+  const { data: wallet, error: walletError } = await supabaseClient
     .from("wallet")
     .select("balance")
     .eq("user_id", withdrawal.user_id)
     .single();
 
-  const newBalance = wallet.balance - withdrawal.amount;
+  if (walletError || !wallet) {
+    showToast(walletError?.message || "Wallet not found", "error");
+    return;
+  }
 
-  await supabaseClient
+  const nextBalance = Number(wallet.balance) - Number(withdrawal.amount);
+  if (nextBalance < 0) {
+    showToast("Cannot approve: insufficient user balance", "error");
+    return;
+  }
+
+  const { error: walletUpdateError } = await supabaseClient
     .from("wallet")
-    .update({ balance: newBalance })
+    .update({ balance: nextBalance })
     .eq("user_id", withdrawal.user_id);
 
-  await supabaseClient
+  if (walletUpdateError) {
+    showToast(walletUpdateError.message, "error");
+    return;
+  }
+
+  const { error: statusError } = await supabaseClient
     .from("withdrawals")
     .update({ status: "approved" })
     .eq("id", withdrawalId);
 
-}
-
-// ==========================================
-// UTILITIES
-// ==========================================
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 0
-  }).format(amount);
-}
-
-function showToast(message, type="info") {
-
-  const container = document.createElement("div");
-  container.className = "fixed top-5 right-5 z-50";
-
-  const toast = document.createElement("div");
-  toast.className = "bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition";
-  toast.innerText = message;
-
-  if (type === "error") {
-    toast.className = "bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition";
+  if (statusError) {
+    showToast(statusError.message, "error");
+    return;
   }
 
-  container.appendChild(toast);
-  document.body.appendChild(container);
+  if (state.currentUser?.id === withdrawal.user_id) {
+    await loadWallet();
+  }
 
-  setTimeout(() => toast.classList.remove("translate-x-full"), 10);
-  setTimeout(() => {
-    toast.classList.add("translate-x-full");
-    setTimeout(() => container.remove(), 300);
-  }, 3000);
+  showToast("Withdrawal approved", "success");
 }
 
+async function loadReferralData() {
+  if (!state.currentUser) return;
+
+  const shortCode = state.currentUser.id.slice(0, 8).toUpperCase();
+  getEl("referral-code").textContent = shortCode;
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  updateAuthUI(false);
+
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session?.user) {
+    state.currentUser = session.user;
+    updateAuthUI(true);
+    await ensureWalletExists();
+    await loadWallet();
+  }
+
+  supabaseClient.auth.onAuthStateChange(async (_event, sessionData) => {
+    state.currentUser = sessionData?.user || null;
+    updateAuthUI(Boolean(state.currentUser));
+
+    if (state.currentUser) {
+      await ensureWalletExists();
+      await loadWallet();
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const dropdown = getEl("user-dropdown");
+    const toggleButton = event.target.closest("button[onclick='toggleUserDropdown()']");
+    if (!toggleButton && dropdown && !dropdown.contains(event.target)) {
+      dropdown.classList.add("hidden");
+    }
+  });
+});
 </script>
-</script>
+
 
 </body>
 </html>
