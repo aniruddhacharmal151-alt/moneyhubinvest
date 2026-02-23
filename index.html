@@ -906,8 +906,9 @@ function closeModal(id) {
 });
   
 async function createInvestment(planName, amount, days) {
+  
 
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { user } } = await supabaseClient.auth.getUser();
   if (!user) {
     alert("Please login first.");
     return;
@@ -919,7 +920,7 @@ async function createInvestment(planName, amount, days) {
   }
 
   // 1️⃣ Get current wallet balance
-  const { data: wallet, error: walletError } = await supabase
+  const { data: wallet, error: walletError } = await supabaseClient
     .from("wallets")
     .select("balance")
     .eq("user_id", user.id)
@@ -938,7 +939,7 @@ async function createInvestment(planName, amount, days) {
   const newBalance = wallet.balance - amount;
 
   // 2️⃣ Insert transaction
-  const { error: txError } = await supabase
+  const { error: txError } = await supabaseClient
     .from("transactions")
     .insert({
       user_id: user.id,
@@ -955,7 +956,7 @@ async function createInvestment(planName, amount, days) {
   }
 
   // 3️⃣ Update wallet balance
-  await supabase
+  await supabaseClient
     .from("wallet")
     .update({ balance: newBalance })
     .eq("user_id", user.id);
@@ -994,7 +995,13 @@ async function createInvestment(planName, amount, days) {
     
     async function handleDeposit(event) {
   event.preventDefault();
+const { data: { user } } = await supabaseClient.auth.getUser();
 
+if (!user) {
+  alert("Please login first.");
+  openLoginModal();  // or whatever your login modal function is called
+  return;
+}
   const amount = parseFloat(document.getElementById("deposit-amount").value);
   const method = document.getElementById("deposit-method").value;
   const errorDiv = document.getElementById("deposit-error");
@@ -1024,7 +1031,7 @@ async function createInvestment(planName, amount, days) {
   }
 
   // 1️⃣ Insert transaction
-  const { error: txError } = await supabase
+  const { error: txError } = await supabaseClient
     .from("transactions")
     .insert({
       user_id: user.id,
@@ -1041,7 +1048,7 @@ async function createInvestment(planName, amount, days) {
   }
 
   // 2️⃣ Get current wallet
-  const { data: wallet } = await supabase
+  const { data: wallet } = await supabaseClient
     .from("wallet")
     .select("balance")
     .eq("user_id", user.id)
@@ -1050,7 +1057,7 @@ async function createInvestment(planName, amount, days) {
   const newBalance = (wallet?.balance || 0) + amount;
 
   // 3️⃣ Update wallet balance
-  await supabase
+  await supabaseClient
     .from("wallet")
     .update({ balance: newBalance })
     .eq("user_id", user.id);
@@ -1079,7 +1086,8 @@ async function createInvestment(planName, amount, days) {
 }
 
   async function loadTransactions() {
-
+const { data: { user } } = await supabaseClient.auth.getUser();
+if (!user) return;
   const { data, error } = await supabaseClient
     .from("transactions")
     .select("*")
@@ -1096,7 +1104,13 @@ async function createInvestment(planName, amount, days) {
   
 async function handleWithdraw(event) {
   event.preventDefault();
+const { data: { user } } = await supabaseClient.auth.getUser();
 
+  if (!user) {            
+  alert("Please login first.");
+  openLoginModal();
+  return;
+}
   const amount = parseFloat(document.getElementById("withdraw-Amount").value);
   const msgEl = document.getElementById("withdrawMsg");
 
@@ -1115,7 +1129,7 @@ async function handleWithdraw(event) {
   }
 
   // Get wallet
-  const { data: wallet } = await supabase
+  const { data: wallet } = await supabaseClient
     .from("wallet")
     .select("*")
     .eq("user_id", user.id)
@@ -1129,7 +1143,7 @@ async function handleWithdraw(event) {
   const newBalance = wallet.balance - amount;
 
   // Insert withdrawal transaction
-  const { error: txError } = await supabase
+  const { error: txError } = await supabaseClient
     .from("transactions")
     .insert({
       user_id: user.id,
@@ -1145,7 +1159,7 @@ async function handleWithdraw(event) {
   }
 
   // Update wallet
-  await supabase
+  await supabaseClient
     .from("wallet")
     .update({ balance: newBalance })
     .eq("user_id", user.id);
@@ -1203,7 +1217,7 @@ supabaseClient.auth.onAuthStateChange(async (event, session) => {
 
 }
   async function loadUserWallet() {
-
+const { data: { user } } = await supabaseClient.auth.getUser();
   if (!currentUser) return;
 
   const { data, error } = await supabaseClient
