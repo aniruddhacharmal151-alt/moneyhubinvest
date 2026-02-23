@@ -722,574 +722,110 @@
   </div>
 
 <script>
-  let currentUser = null;
-  
-window.onerror = function(message, source, lineno) {
-  alert("Error at line: " + lineno + " → " + message);
-};
-  
-    function formatCurrency(amount) {
-      return new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: 'INR',
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-      }).format(amount);
-    }
-    
-    function formatDate(dateString) {
-      return new Date(dateString).toLocaleDateString('en-IN', {
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
-    }
-    
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toast-container');
-      const toast = document.createElement('div');
-      
-      const colors = {
-        success: 'bg-green-500',
-        error: 'bg-red-500',
-        info: 'bg-blue-500'
-      };
-      
-      toast.className = `${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300`;
-      toast.textContent = message;
-      
-      container.appendChild(toast);
-      
-      setTimeout(() => toast.classList.remove('translate-x-full'), 10);
-      setTimeout(() => {
-        toast.classList.add('translate-x-full');
-        setTimeout(() => toast.remove(), 300);
-      }, 3000);
-    }
-    
-    // Tab Switching
-    function switchLoginTab(tab) {
-      const emailTab = document.getElementById('login-tab-email');
-      const phoneTab = document.getElementById('login-tab-phone');
-      const emailForm = document.getElementById('login-email-form');
-      const phoneForm = document.getElementById('login-phone-form');
-      
-      if (tab === 'email') {
-        emailTab.classList.add('bg-green-100', 'text-green-600');
-        emailTab.classList.remove('text-gray-400');
-        phoneTab.classList.remove('bg-green-100', 'text-green-600');
-        phoneTab.classList.add('text-gray-400');
-        emailForm.classList.remove('hidden');
-        phoneForm.classList.add('hidden');
-      } else {
-        phoneTab.classList.add('bg-green-100', 'text-green-600');
-        phoneTab.classList.remove('text-gray-400');
-        emailTab.classList.remove('bg-green-100', 'text-green-600');
-        emailTab.classList.add('text-gray-400');
-        phoneForm.classList.remove('hidden');
-        emailForm.classList.add('hidden');
-      }
-    }
-    
-    function switchSignupTab(tab) {
-      const emailTab = document.getElementById('signup-tab-email');
-      const phoneTab = document.getElementById('signup-tab-phone');
-      const emailForm = document.getElementById('signup-email-form');
-      const phoneForm = document.getElementById('signup-phone-form');
-      
-      if (tab === 'email') {
-        emailTab.classList.add('bg-green-100', 'text-green-600');
-        emailTab.classList.remove('text-gray-400');
-        phoneTab.classList.remove('bg-green-100', 'text-green-600');
-        phoneTab.classList.add('text-gray-400');
-        emailForm.classList.remove('hidden');
-        phoneForm.classList.add('hidden');
-      } else {
-        phoneTab.classList.add('bg-green-100', 'text-green-600');
-        phoneTab.classList.remove('text-gray-400');
-        emailTab.classList.remove('bg-green-100', 'text-green-600');
-        emailTab.classList.add('text-gray-400');
-        phoneForm.classList.remove('hidden');
-        emailForm.classList.add('hidden');
-      }
-    }
-  
-  function openModal(id) {
-  const modal = document.getElementById(id + "-modal");
-  if (modal) {
-    modal.classList.remove("hidden");
-  }
+
+let signupEmailTemp = null;
+
+// ================= MODAL CONTROL =================
+
+function openAuthModal() {
+  document.getElementById("auth-modal").classList.remove("hidden");
 }
 
-function closeModal(id) {
-  const modal = document.getElementById(id + "-modal");
-  if (modal) {
-    modal.classList.add("hidden");
-  }
-}
- 
-  const { createClient } = supabase;
-
-  const supabaseClient = createClient(
-    "https://vwsbxvpghoolfqyxyovf.supabase.co",
-    "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
-  );
-  
-  async function handleEmailSignup(event) {
-  event.preventDefault();
-
-  const email = document.getElementById("signup-email").value;
-  const password = document.getElementById("signup-password").value;
-
-  const { data, error } = await supabaseClient.auth.signUp({
-    email: email,
-    password: password
-  });
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  alert("Signup successful! Please login.");
-
-  // Optional: auto-create wallet
-  if (data.user) {
-    await ensureWalletExists(data.user.id);
-  }
+function closeAuthModal() {
+  document.getElementById("auth-modal").classList.add("hidden");
 }
 
-  async function handleEmailLogin(event) {
-  event.preventDefault();
+function showLogin() {
+  document.getElementById("login-section").classList.remove("hidden");
+  document.getElementById("signup-section").classList.add("hidden");
+
+  document.getElementById("tab-login").classList.add("border-blue-600");
+  document.getElementById("tab-signup").classList.remove("border-blue-600");
+}
+
+function showSignup() {
+  document.getElementById("login-section").classList.add("hidden");
+  document.getElementById("signup-section").classList.remove("hidden");
+
+  document.getElementById("tab-login").classList.remove("border-blue-600");
+  document.getElementById("tab-signup").classList.add("border-blue-600");
+}
+
+// ================= LOGIN =================
+
+async function handleLogin(e) {
+  e.preventDefault();
 
   const email = document.getElementById("login-email").value;
   const password = document.getElementById("login-password").value;
 
-  const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email: email,
-    password: password
+  const { error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password
   });
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+  if (error) return alert(error.message);
 
-  alert("Login successful!");
-
-  updateUIAfterLogin(data.user);
+  alert("Login successful");
+  closeAuthModal();
 }
 
-  async function logout() {
-  await supabaseClient.auth.signOut();
-  updateUIAfterLogout();
-}
-  supabaseClient.auth.onAuthStateChange((event, session) => {
-  if (session && session.user) {
-    updateUIAfterLogin(session.user);
-  } else {
-    updateUIAfterLogout();
-  }
-});
-  
-async function createInvestment(planName, amount, days) {
-  
+// ================= SIGNUP STEP 1 =================
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!user) {
-    alert("Please login first.");
-    return;
-  }
+async function sendSignupOtp() {
+  const email = document.getElementById("signup-email").value;
+  if (!email) return alert("Enter email");
 
-  if (!amount || amount <= 0) {
-    alert("Invalid amount");
-    return;
-  }
+  signupEmailTemp = email;
 
-  // 1️⃣ Get current wallet balance
-  const { data: wallet, error: walletError } = await supabaseClient
-    .from("wallets")
-    .select("balance")
-    .eq("user_id", user.id)
-    .single();
-
-  if (walletError || !wallet) {
-    alert("Wallet not found");
-    return;
-  }
-
-  if (wallet.balance < amount) {
-    alert("Insufficient balance");
-    return;
-  }
-
-  const newBalance = wallet.balance - amount;
-
-  // 2️⃣ Insert transaction
-  const { error: txError } = await supabaseClient
-    .from("transactions")
-    .insert({
-      user_id: user.id,
-      transaction_type: "investment",
-      amount: amount,
-      status: "completed",
-      plan_name: planName,
-      days: days
-    });
-
-  if (txError) {
-    alert("Investment failed");
-    return;
-  }
-
-  // 3️⃣ Update wallet balance
-  await supabaseClient
-    .from("wallet")
-    .update({ balance: newBalance })
-    .eq("user_id", user.id);
-
-  alert("Investment successful!");
-
-  loadWallet();
-  loadTransactions();
-}
-    
-  // Deposit Functions
-    function checkAuthAndDeposit(amount) {
-      if (!currentUser) {
-        openModal('signup');
-        return;
-      }
-      
-      document.getElementById('deposit-amount').value = amount;
-      openModal('deposit');
-    }
-    
-    function setDepositAmount(amount) {
-      document.getElementById('deposit-amount').value = amount;
-    }
-    
-    function selectPaymentMethod(method) {
-      selectedPaymentMethod = method;
-      document.getElementById('deposit-method').value = method;
-      
-      document.querySelectorAll('.payment-option').forEach(el => {
-        el.classList.remove('selected');
-      });
-      
-      event.target.closest('.payment-option')?.classList.add('selected');
-    }
-    
-    async function handleDeposit(event) {
-  event.preventDefault();
-const { data: { user } } = await supabaseClient.auth.getUser();
-
-if (!user) {
-  alert("Please login first.");
-  openLoginModal();  // or whatever your login modal function is called
-  return;
-}
-  const amount = parseFloat(document.getElementById("deposit-amount").value);
-  const method = document.getElementById("deposit-method").value;
-  const errorDiv = document.getElementById("deposit-error");
-  const successDiv = document.getElementById("deposit-success");
-
-  errorDiv.classList.add("hidden");
-  successDiv.classList.add("hidden");
-
-  if (!amount || amount < 2000) {
-    errorDiv.innerText = "Minimum deposit is ₹2,000";
-    errorDiv.classList.remove("hidden");
-    return;
-  }
-
-  if (!method) {
-    errorDiv.innerText = "Please select a payment method";
-    errorDiv.classList.remove("hidden");
-    return;
-  }
-
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-    errorDiv.innerText = "You must be logged in.";
-    errorDiv.classList.remove("hidden");
-    return;
-  }
-
-  // 1️⃣ Insert transaction
-  const { error: txError } = await supabaseClient
-    .from("transactions")
-    .insert({
-      user_id: user.id,
-      transaction_type: "deposit",
-      amount: amount,
-      payment_method: method,
-      status: "completed"
-    });
-
-  if (txError) {
-    errorDiv.innerText = "Transaction failed.";
-    errorDiv.classList.remove("hidden");
-    return;
-  }
-
-  // 2️⃣ Get current wallet
-  const { data: wallet } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", user.id)
-    .single();
-
-  const newBalance = (wallet?.balance || 0) + amount;
-
-  // 3️⃣ Update wallet balance
-  await supabaseClient
-    .from("wallet")
-    .update({ balance: newBalance })
-    .eq("user_id", user.id);
-
-  successDiv.innerText = "Deposit successful!";
-  successDiv.classList.remove("hidden");
-
-  document.getElementById("deposit-form").reset();
-}
-  
-  async function loadUserWallet() {
-
-  const { data, error } = await supabaseClient
-    .from("wallet")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (error) {
-    console.log(error.message);
-    return;
-  }
-
-  document.getElementById("user-balance").innerText =
-  formatCurrency(data.balance);
-}
-
-  async function loadTransactions() {
-const { data: { user } } = await supabaseClient.auth.getUser();
-if (!user) return;
-  const { data, error } = await supabaseClient
-    .from("transactions")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.log(error.message);
-    return;
-  }
-
-  console.log("Transactions:", data);
-}
-  
-async function handleWithdraw(event) {
-  event.preventDefault();
-const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {            
-  alert("Please login first.");
-  openLoginModal();
-  return;
-}
-  const amount = parseFloat(document.getElementById("withdraw-Amount").value);
-  const msgEl = document.getElementById("withdrawMsg");
-
-  msgEl.textContent = "";
-
-  if (!amount || amount <= 0) {
-    msgEl.textContent = "Enter valid amount.";
-    return;
-  }
-
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (!user) {
-    msgEl.textContent = "Please login first.";
-    return;
-  }
-
-  // Get wallet
-  const { data: wallet } = await supabaseClient
-    .from("wallet")
-    .select("*")
-    .eq("user_id", user.id)
-    .single();
-
-  if (!wallet || wallet.balance < amount) {
-    msgEl.textContent = "Insufficient balance.";
-    return;
-  }
-
-  const newBalance = wallet.balance - amount;
-
-  // Insert withdrawal transaction
-  const { error: txError } = await supabaseClient
-    .from("transactions")
-    .insert({
-      user_id: user.id,
-      transaction_type: "withdrawal",
-      amount: amount,
-      payment_method: "UPI",
-      status: "pending"
-    });
-
-  if (txError) {
-    msgEl.textContent = "Withdrawal failed.";
-    return;
-  }
-
-  // Update wallet
-  await supabaseClient
-    .from("wallet")
-    .update({ balance: newBalance })
-    .eq("user_id", user.id);
-
-  currentBalance = newBalance;
-
-  msgEl.style.color = "green";
-  msgEl.textContent = "Withdrawal request submitted.";
-
-  document.getElementById("withdrawAmount").value = "";
-}
-       
-   // Smooth scroll
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-  </script>
-<script>
-  let currentUser = null;
-  
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-
-  if (session && session.user) {
-    currentUser = session.user;
-    console.log("Logged in:", currentUser.id);
-
-    await ensureWalletExists(currentUser.id);
-    loadUserWallet();
-
-  } else {
-    currentUser = null;
-    console.log("User logged out");
-  }
-
-});
-  async function ensureWalletExists(userId) {
-
-  const { data, error } = await supabaseClient
-    .from("wallet")
-    .select("*")
-    .eq("user_id", userId)
-    .single();
-
-  if (!data) {
-    await supabaseClient
-      .from("wallet")
-      .insert([{ user_id: userId, balance: 0 }]);
-  }
-
-}
-  async function loadUserWallet() {
-const { data: { user } } = await supabaseClient.auth.getUser();
-  if (!currentUser) return;
-
-  const { data, error } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (data) {
-    document.getElementById("balance").innerText = data.balance;
-  }
-
-}
-document.addEventListener("DOMContentLoaded", function () {
-}
-  
-  const emailInput = document.getElementById("email-input");
-  const otpInput = document.getElementById("otp-input");
-  const sendOtpBtn = document.getElementById("send-otp-btn");
-  const verifyOtpBtn = document.getElementById("verify-otp-btn");
-
-  // Send OTP
-  if (sendOtpBtn) {
-  sendOtpBtn.addEventListener("click", async () => {
-    const email = emailInput.value.trim();
-
-    if (!email) {
-      alert("Enter email first");
-      return;
-    }
-
-    const { error } = await supabaseClient.auth.signInWithOtp({
-      email: email
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("OTP sent to your email");
-    }
-  });
-  }
-
-  // Verify OTP
-if (verifyOtpBtn) {
-
-  verifyOtpBtn.addEventListener("click", async () => {
-
-    const email = emailInput.value.trim();
-    const token = otpInput.value.trim();
-
-    if (!token) {
-      alert("Enter OTP");
-      return;
-    }
-
-    const { error } = await supabaseClient.auth.verifyOtp({
-      email: email,
-      token: token,
-      type: "email"
-    });
-
-    if (error) {
-      alert(error.message);
-    } else {
-      alert("Login successful");
-      loadUserData();
-    }
-
+  const { error } = await supabaseClient.auth.signInWithOtp({
+    email,
+    options: { shouldCreateUser: true }
   });
 
-});
+  if (error) return alert(error.message);
 
-async function loadUserData() {
+  document.getElementById("signup-step-email").classList.add("hidden");
+  document.getElementById("signup-step-otp").classList.remove("hidden");
 
-  const { data: { user } } = await supabaseClient.auth.getUser();
-
-  if (user) {
-    console.log("User ID:", user.id);
-    // Load wallet + transactions here
-  }
-
+  alert("OTP sent to your email");
 }
+
+// ================= SIGNUP STEP 2 =================
+
+async function verifySignupOtp() {
+  const otp = document.getElementById("signup-otp").value;
+
+  const { error } = await supabaseClient.auth.verifyOtp({
+    email: signupEmailTemp,
+    token: otp,
+    type: "email"
+  });
+
+  if (error) return alert(error.message);
+
+  document.getElementById("signup-step-otp").classList.add("hidden");
+  document.getElementById("signup-step-password").classList.remove("hidden");
+
+  alert("Email verified");
+}
+
+// ================= SIGNUP STEP 3 =================
+
+async function finishSignup() {
+  const password = document.getElementById("signup-password").value;
+
+  const { error } = await supabaseClient.auth.updateUser({
+    password
+  });
+
+  if (error) return alert(error.message);
+
+  alert("Account created successfully");
+  closeAuthModal();
+}
+
 </script>
+
 </body>
 </html>
