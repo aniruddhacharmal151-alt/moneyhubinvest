@@ -828,16 +828,16 @@ window.onerror = function(message, source, lineno) {
     }
   
   function openModal(id) {
-  const modal = document.getElementById(id);
+  const modal = document.getElementById(id + "-modal");
   if (modal) {
-    modal.style.display = "block";
+    modal.classList.remove("hidden");
   }
 }
 
 function closeModal(id) {
-  const modal = document.getElementById(id);
+  const modal = document.getElementById(id + "-modal");
   if (modal) {
-    modal.style.display = "none";
+    modal.classList.add("hidden");
   }
 }
  
