@@ -1,1079 +1,179 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Investment Platform</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script> 
-  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <style>
-    * { box-sizing: border-box; }
-    body { font-family: 'Arial', sans-serif; }
-    
-    @keyframes pulse-banner {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.02); }
-    }
-    
-    @keyframes float {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-    
-    .banner-animate {
-      animation: pulse-banner 2s ease-in-out infinite;
-    }
-    
-    .float-animation {
-      animation: float 3s ease-in-out infinite;
-    }
-    
-    .modal-backdrop {
-      background: rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(8px);
-    }
-    
-    .input-focus:focus {
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.3);
-    }
-    
-    .payment-option {
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
-    }
-    
-    .payment-option:hover, .payment-option.selected {
-      border-color: #22c55e;
-      background: rgba(34, 197, 94, 0.1);
-    }
-    
-    .slot-card {
-      transition: all 0.3s ease;
-    }
-    
-    .slot-card:hover {
-      transform: translateY(-4px);
-    }
-    
-    .table-row:hover {
-      background: rgba(34, 197, 94, 0.05);
-    }
-    
-    .copy-button {
-      transition: all 0.2s ease;
-    }
-    
-    .copy-button:active {
-      transform: scale(0.95);
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MoneyHub Invest | Premium Fintech</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-<body class="h-full bg-white text-gray-800 overflow-auto">
-  <div id="app" class="min-h-full w-full">
-    
-    <!-- Navigation -->
-    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex items-center justify-between h-16">
-          <!-- Logo -->
-          <div class="flex items-center gap-2">
-            <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center text-white font-bold text-lg">💰</div>
-            <span class="text-xl font-bold text-green-600">InvestHub</span>
-          </div>
-          
-          <!-- Desktop Nav -->
-          <div class="hidden lg:flex items-center gap-8">
-            <a href="#offers" class="text-gray-600 hover:text-green-600 font-medium transition">Special Offers</a>
-            <a href="#slots" class="text-gray-600 hover:text-green-600 font-medium transition">Investment Slots</a>
-            <a href="#how" class="text-gray-600 hover:text-green-600 font-medium transition">How It Works</a>
-          </div>
-          
-          <!-- Auth Buttons -->
-          <div id="auth-buttons" class="flex items-center gap-3">
-            <button onclick="openModal('login')" class="px-4 py-2 text-green-600 font-medium hover:text-green-700 transition">Login</button>
-            <button onclick="openModal('signup')" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Sign Up</button>
-          </div>
-          <div id="user-menu" class="hidden items-center gap-3">
-            <button onclick="openModal('deposit')" class="px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition">Deposit</button>
-            <button onclick="openModal('withdraw')" class="px-3 py-2 text-green-600 border border-green-600 rounded-lg hover:bg-green-50 transition">Withdraw</button>
-            <div class="relative">
-              <button onclick="toggleUserDropdown()" class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition">
-                <span class="text-sm text-gray-600">👤</span>
-                <span id="user-balance" class="text-green-600 font-bold text-sm">₹0</span>
-              </button>
-              <div id="user-dropdown" class="hidden absolute right-0 top-full mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden">
-                <button onclick="showSection('transactions')" class="w-full px-4 py-3 text-left text-gray-600 hover:bg-green-50 hover:text-green-600 transition">📊 Transaction History</button>
-                <button onclick="showSection('referral')" class="w-full px-4 py-3 text-left text-gray-600 hover:bg-green-50 hover:text-green-600 transition">🎁 Referral Program</button>
-                <button onclick="logout()" class="w-full px-4 py-3 text-left text-gray-600 hover:bg-red-50 hover:text-red-600 transition">🚪 Logout</button>
-              </div>
-            </div>
-          </div>
-        </div>
+<body class="h-full">
+  <div id="app" class="app-shell page-transition">
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-mark">₹</div>
+        <span>MoneyHub Invest</span>
       </div>
-    </nav>
-    
-    <!-- Main Content -->
-    <main id="main-content" class="pt-0">
-      
-      <!-- Splashing Offer Banner -->
-      <section id="offers" class="bg-gradient-to-r from-orange-500 to-red-500 py-12 px-4">
-        <div class="max-w-7xl mx-auto">
-          <div class="text-center text-white banner-animate">
-            <div class="text-lg font-bold mb-2">🔥 LIMITED TIME OFFER 🔥</div>
-            <div class="text-4xl md:text-5xl font-bold mb-4">Deposit ₹15,000 → Get ₹30,000</div>
-            <div class="text-xl md:text-2xl mb-4">Invest for just 65 Days</div>
-            <div class="text-lg">Returns: 100% Profit | Time Period: 65 Days</div>
-            <button onclick="checkAuthAndDeposit(15000)" class="mt-6 px-8 py-3 bg-white text-red-600 font-bold rounded-lg hover:bg-gray-100 transition text-lg">
-              Start Now
-            </button>
+
+      <button id="menu-toggle" class="hamburger" aria-label="Toggle menu">☰</button>
+
+      <nav id="main-nav" class="nav-links">
+        <a href="#offers" data-route="marketing">Offers</a>
+        <a href="#slots" data-route="marketing">Plans</a>
+        <a href="#how" data-route="marketing">How it works</a>
+        <a href="#dashboard" data-route="dashboard" class="user-only">Dashboard</a>
+        <a href="#admin" data-route="admin" class="admin-only">Admin</a>
+      </nav>
+
+      <div id="auth-buttons" class="auth-buttons">
+        <button onclick="window.UI.openAuthModal('login')" class="btn ghost">Login</button>
+        <button onclick="window.UI.openAuthModal('signup')" class="btn primary">Sign Up</button>
+      </div>
+
+      <div id="user-menu" class="user-menu hidden">
+        <button onclick="window.Payments.openDepositModal()" class="btn primary">Deposit</button>
+        <button onclick="window.UI.openModal('withdraw')" class="btn ghost">Withdraw</button>
+        <button id="profile-trigger" class="btn soft">
+          <span id="user-balance">₹0</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" class="content">
+      <section id="marketing-view">
+        <section id="offers" class="hero card">
+          <p class="kicker">Premium Wealth Growth</p>
+          <h1>Invest with confidence in a secure, modern fintech platform.</h1>
+          <p>Build your portfolio with premium plans, transparent payouts, and protected transactions.</p>
+          <button class="btn primary" onclick="window.App.checkAuthAndDeposit(5000)">Start Investing</button>
+        </section>
+
+        <section id="slots" class="plans-section">
+          <h2>Investment Plans</h2>
+          <div class="plans-grid">
+            <article class="plan-card"><h3>Starter</h3><p>₹2,000 - ₹4,999</p><small>30 Days</small><button class="btn soft" onclick="window.App.checkAuthAndDeposit(2000)">Choose</button></article>
+            <article class="plan-card"><h3>Silver</h3><p>₹5,000 - ₹9,999</p><small>45 Days</small><button class="btn soft" onclick="window.App.checkAuthAndDeposit(5000)">Choose</button></article>
+            <article class="plan-card featured"><h3>Gold</h3><p>₹10,000 - ₹20,000</p><small>65 Days</small><button class="btn primary" onclick="window.App.checkAuthAndDeposit(10000)">Choose</button></article>
+            <article class="plan-card"><h3>Emerald</h3><p>₹20,000+</p><small>90 Days</small><button class="btn soft" onclick="window.App.checkAuthAndDeposit(20000)">Choose</button></article>
           </div>
-        </div>
+        </section>
+
+        <section id="how" class="card how-grid">
+          <div><strong>1</strong><p>Secure signup with OTP verification.</p></div>
+          <div><strong>2</strong><p>Fund wallet with Razorpay protected checkout.</p></div>
+          <div><strong>3</strong><p>Track real and bonus balances live.</p></div>
+          <div><strong>4</strong><p>Withdrawals are admin-reviewed for security.</p></div>
+        </section>
       </section>
-      
-      <!-- Investment Slots Section -->
-      <section id="slots" class="py-16 px-4">
-        <div class="max-w-7xl mx-auto">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800 mb-3">Investment Slots</h2>
-            <p class="text-gray-600 text-lg">Choose your investment amount and duration</p>
-          </div>
-          
-          <!-- Slots Grid - Compact -->
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2">
-            <!-- Bronze: 2K-6K, 30 Days -->
-            <div class="slot-card bg-white border-2 border-gray-300 rounded-lg p-3">
-              <div class="text-center mb-2">
-                <span class="text-3xl">🥉</span>
-                <h3 class="text-sm font-bold text-gray-800 mt-1">Bronze</h3>
-              </div>
-              <div class="bg-gray-100 rounded p-2 mb-2 text-center">
-                <p class="text-gray-600 text-xs">Amount</p>
-                <p class="text-base font-bold text-gray-800">₹2K-6K</p>
-                <p class="text-green-600 font-bold text-xs mt-1">30 Days</p>
-              </div>
-              <button onclick="checkAuthAndDeposit(2000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
-            </div>
-            
-            <!-- Silver: 5K-9K, 45 Days -->
-            <div class="slot-card bg-white border-2 border-gray-300 rounded-lg p-3">
-              <div class="text-center mb-2">
-                <span class="text-3xl">🥈</span>
-                <h3 class="text-sm font-bold text-gray-800 mt-1">Silver</h3>
-              </div>
-              <div class="bg-gray-100 rounded p-2 mb-2 text-center">
-                <p class="text-gray-600 text-xs">Amount</p>
-                <p class="text-base font-bold text-gray-800">₹5K-9K</p>
-                <p class="text-green-600 font-bold text-xs mt-1">45 Days</p>
-              </div>
-              <button onclick="checkAuthAndDeposit(5000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
-            </div>
-            
-            <!-- Gold: 10K-20K, 65 Days -->
-            <div class="slot-card bg-white border-2 border-yellow-400 rounded-lg p-3">
-              <div class="text-center mb-2">
-                <span class="text-3xl">🥇</span>
-                <h3 class="text-sm font-bold text-gray-800 mt-1">Gold</h3>
-                <span class="inline-block bg-yellow-400 text-gray-800 px-2 py-0.5 rounded-full text-xs font-bold mt-1">Popular</span>
-              </div>
-              <div class="bg-yellow-50 rounded p-2 mb-2 text-center">
-                <p class="text-gray-600 text-xs">Amount</p>
-                <p class="text-base font-bold text-gray-800">₹10K-20K</p>
-                <p class="text-green-600 font-bold text-xs mt-1">65 Days</p>
-              </div>
-              <button onclick="checkAuthAndDeposit(10000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
-            </div>
-            
-            <!-- Emerald: 12K-23K, 75 Days -->
-            <div class="slot-card bg-white border-2 border-green-400 rounded-lg p-3">
-              <div class="text-center mb-2">
-                <span class="text-3xl">💚</span>
-                <h3 class="text-sm font-bold text-gray-800 mt-1">Emerald</h3>
-              </div>
-              <div class="bg-green-50 rounded p-2 mb-2 text-center">
-                <p class="text-gray-600 text-xs">Amount</p>
-                <p class="text-base font-bold text-gray-800">₹12K-23K</p>
-                <p class="text-green-600 font-bold text-xs mt-1">75 Days</p>
-              </div>
-              <button onclick="checkAuthAndDeposit(12000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
-            </div>
-            
-            <!-- Sapphire: 30K-60K, 160 Days -->
-            <div class="slot-card bg-white border-2 border-blue-400 rounded-lg p-3">
-              <div class="text-center mb-2">
-                <span class="text-3xl">💙</span>
-                <h3 class="text-sm font-bold text-gray-800 mt-1">Sapphire</h3>
-              </div>
-              <div class="bg-blue-50 rounded p-2 mb-2 text-center">
-                <p class="text-gray-600 text-xs">Amount</p>
-                <p class="text-base font-bold text-gray-800">₹30K-60K</p>
-                <p class="text-green-600 font-bold text-xs mt-1">160 Days</p>
-              </div>
-              <button onclick="checkAuthAndDeposit(30000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
-            </div>
-            
-            <!-- Diamond: 40K-75K, 230 Days -->
-            <div class="slot-card bg-white border-2 border-cyan-400 rounded-lg p-3">
-              <div class="text-center mb-2">
-                <span class="text-3xl">💎</span>
-                <h3 class="text-sm font-bold text-gray-800 mt-1">Diamond</h3>
-                <span class="inline-block bg-cyan-400 text-white px-2 py-0.5 rounded-full text-xs font-bold mt-1">Premium</span>
-              </div>
-              <div class="bg-cyan-50 rounded p-2 mb-2 text-center">
-                <p class="text-gray-600 text-xs">Amount</p>
-                <p class="text-base font-bold text-gray-800">₹40K-75K</p>
-                <p class="text-green-600 font-bold text-xs mt-1">230 Days</p>
-              </div>
-              <button onclick="checkAuthAndDeposit(40000)" class="w-full bg-green-600 text-white font-bold py-2 text-xs rounded-lg hover:bg-green-700 transition">Deposit</button>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- How It Works -->
-      <section id="how" class="bg-gray-50 py-16 px-4">
-        <div class="max-w-7xl mx-auto">
-          <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-800">How It Works</h2>
-          </div>
-          
-          <div class="grid md:grid-cols-4 gap-8">
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">1️⃣</div>
-              <h3 class="text-xl font-bold text-gray-800 mb-2">Sign Up</h3>
-              <p class="text-gray-600">Create your account with email or phone number</p>
-            </div>
-            
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">2️⃣</div>
-              <h3 class="text-xl font-bold text-gray-800 mb-2">Deposit</h3>
-              <p class="text-gray-600">Add funds using secure payment methods</p>
-            </div>
-            
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">3️⃣</div>
-              <h3 class="text-xl font-bold text-gray-800 mb-2">Choose Slot</h3>
-              <p class="text-gray-600">Select your investment slot and duration</p>
-            </div>
-            
-            <div class="text-center">
-              <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center text-3xl">4️⃣</div>
-              <h3 class="text-xl font-bold text-gray-800 mb-2">Earn & Withdraw</h3>
-              <p class="text-gray-600">Complete your investment cycle and withdraw</p>
-            </div>
-          </div>
-        </div>
-      </section>
-      
-      <!-- Transaction History Section -->
-      <section id="transactions-section" class="hidden py-16 px-4">
-        <div class="max-w-7xl mx-auto">
-          <div class="flex items-center justify-between mb-8">
-            <h2 class="text-3xl font-bold text-gray-800">Transaction History</h2>
-            <button onclick="hideTransactions()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">← Back Home</button>
-          </div>
-          
-          <!-- Filters -->
-          <div class="flex flex-wrap gap-3 mb-6">
-            <select id="filter-type" onchange="filterTransactions()" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none">
-              <option value="all">All Types</option>
-              <option value="deposit">Deposits</option>
-              <option value="withdrawal">Withdrawals</option>
-              <option value="investment">Investments</option>
-            </select>
-            <select id="filter-status" onchange="filterTransactions()" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none">
-              <option value="all">All Status</option>
-              <option value="completed">Completed</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
-            </select>
-            <select id="filter-sort" onchange="filterTransactions()" class="px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none">
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="amount-high">Amount: High to Low</option>
-              <option value="amount-low">Amount: Low to High</option>
-            </select>
-          </div>
-          
-          <!-- Transactions Table -->
-          <div class="overflow-x-auto bg-white rounded-lg border border-gray-200">
-            <table class="w-full">
-              <thead class="bg-gray-100 border-b border-gray-200">
-                <tr>
-                  <th class="px-6 py-4 text-left font-bold text-gray-800">Date & Time</th>
-                  <th class="px-6 py-4 text-left font-bold text-gray-800">Type</th>
-                  <th class="px-6 py-4 text-left font-bold text-gray-800">Details</th>
-                  <th class="px-6 py-4 text-left font-bold text-gray-800">Amount</th>
-                  <th class="px-6 py-4 text-left font-bold text-gray-800">Status</th>
-                </tr>
-              </thead>
-              <tbody id="transactions-table" class="divide-y divide-gray-200">
-                <tr>
-                  <td colspan="5" class="px-6 py-12 text-center text-gray-400">
-                    <div class="flex flex-col items-center gap-2">
-                      <span class="text-4xl">📊</span>
-                      <p>No transactions yet</p>
-                    </div>
-                  </td>
-                </tr>
-              </tbody>
+
+      <section id="dashboard-layout" class="hidden">
+        <div class="dashboard-grid">
+          <aside class="card sidebar-panel">
+            <h3>Wallet</h3>
+            <p>Real Balance</p>
+            <h2 id="dashboard-real-balance">₹0</h2>
+            <p>Bonus Balance</p>
+            <h2 id="dashboard-bonus-balance">₹0</h2>
+            <p id="bonus-note">Bonus capped at ₹500 and not withdrawable.</p>
+            <button id="claim-bonus-btn" class="btn soft">Claim Daily Bonus</button>
+          </aside>
+
+          <section class="card">
+            <h3>Premium Deposits</h3>
+            <p>Secure payments powered by Razorpay</p>
+            <p class="small-text">Supports UPI, net banking, cards, and wallets.</p>
+            <button class="btn primary" onclick="window.Payments.openDepositModal()">Deposit with Razorpay</button>
+          </section>
+
+          <section id="transactions-section" class="card">
+            <h3>Transactions</h3>
+            <table>
+              <thead><tr><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="transactions-table"></tbody>
             </table>
-          </div>
+          </section>
+
+          <section id="referral-section" class="card">
+            <h3>Referral</h3>
+            <p>Your code: <strong id="referral-code">—</strong></p>
+            <p>Total referrals: <strong id="total-referrals">0</strong></p>
+            <p>Earnings: <strong id="referral-earnings">₹0</strong></p>
+          </section>
         </div>
       </section>
-      
-      <!-- Referral Program Section -->
-      <section id="referral-section" class="hidden py-16 px-4">
-        <div class="max-w-7xl mx-auto">
-          <div class="flex items-center justify-between mb-8">
-            <h2 class="text-3xl font-bold text-gray-800">🎁 Referral Program</h2>
-            <button onclick="hideReferral()" class="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition">← Back Home</button>
-          </div>
-          
-          <!-- Referral Stats -->
-          <div class="grid md:grid-cols-3 gap-6 mb-8">
-            <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6 border border-green-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-gray-600 text-sm font-medium">Your Referral Code</p>
-                  <p id="referral-code" class="text-2xl font-bold text-green-600 mt-2">—</p>
-                </div>
-                <span class="text-4xl">🔗</span>
-              </div>
-              <button onclick="copyReferralCode()" class="w-full mt-4 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition copy-button font-medium">Copy Code</button>
-            </div>
-            
-            <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6 border border-blue-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-gray-600 text-sm font-medium">Total Referrals</p>
-                  <p id="total-referrals" class="text-2xl font-bold text-blue-600 mt-2">0</p>
-                </div>
-                <span class="text-4xl">👥</span>
-              </div>
-              <p class="text-blue-600 text-xs font-medium mt-4">Friends who joined</p>
-            </div>
-            
-            <div class="bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg p-6 border border-orange-300">
-              <div class="flex items-center justify-between">
-                <div>
-                  <p class="text-gray-600 text-sm font-medium">Referral Earnings</p>
-                  <p id="referral-earnings" class="text-2xl font-bold text-orange-600 mt-2">₹0</p>
-                </div>
-                <span class="text-4xl">💸</span>
-              </div>
-              <p class="text-orange-600 text-xs font-medium mt-4">₹50 per referral</p>
-            </div>
-          </div>
-          
-          <!-- How It Works -->
-          <div class="bg-blue-50 rounded-lg p-6 border border-blue-300 mb-8">
-            <h3 class="text-xl font-bold text-gray-800 mb-4">How Referral Program Works</h3>
-            <div class="space-y-3">
-              <div class="flex gap-4">
-                <span class="text-2xl">1️⃣</span>
-                <p class="text-gray-700"><span class="font-bold">Share Your Code</span> - Copy your unique referral code and share it with friends</p>
-              </div>
-              <div class="flex gap-4">
-                <span class="text-2xl">2️⃣</span>
-                <p class="text-gray-700"><span class="font-bold">Friend Signs Up</span> - Your friend uses your referral code during registration</p>
-              </div>
-              <div class="flex gap-4">
-                <span class="text-2xl">3️⃣</span>
-                <p class="text-gray-700"><span class="font-bold">First Deposit</span> - Your friend makes their first deposit of ₹2,000 or more</p>
-              </div>
-              <div class="flex gap-4">
-                <span class="text-2xl">4️⃣</span>
-                <p class="text-gray-700"><span class="font-bold">Earn ₹50</span> - You instantly earn ₹50 bonus for each successful referral</p>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Referral List -->
-          <div class="bg-white rounded-lg border border-gray-200 overflow-hidden">
-            <div class="bg-gray-100 border-b border-gray-200 px-6 py-4">
-              <h3 class="text-lg font-bold text-gray-800">Your Referrals</h3>
-            </div>
-            <div id="referral-list" class="divide-y divide-gray-200">
-              <div class="px-6 py-12 text-center text-gray-400">
-                <div class="flex flex-col items-center gap-2">
-                  <span class="text-4xl">👫</span>
-                  <p>No referrals yet. Share your code to earn!</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+
+      <section id="admin-panel" class="hidden card">
+        <h3>Withdrawal Approval Panel</h3>
+        <table>
+          <thead><tr><th>User</th><th>Amount</th><th>UPI</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="admin-withdrawals-table"></tbody>
+        </table>
       </section>
-      
     </main>
-    
-    <!-- Footer -->
-    <footer class="bg-gray-800 text-white py-12 px-4 mt-16">
-      <div class="max-w-7xl mx-auto grid md:grid-cols-4 gap-8 mb-8">
-        <div>
-          <div class="flex items-center gap-2 mb-4">
-            <div class="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center font-bold">💰</div>
-            <span class="text-xl font-bold">InvestHub</span>
-          </div>
-          <p class="text-gray-400 text-sm">Secure investment platform for your future</p>
+
+    <div id="auth-modal" class="modal hidden">
+      <div class="modal-card">
+        <button class="close" onclick="window.UI.closeAuthModal()">✕</button>
+        <div class="tabs">
+          <button id="tab-login" onclick="window.Auth.showLogin()" class="active">Login</button>
+          <button id="tab-signup" onclick="window.Auth.showSignup()">Signup</button>
         </div>
-        
-        <div>
-          <h4 class="font-bold mb-4">Quick Links</h4>
-          <ul class="space-y-2 text-sm text-gray-400">
-            <li><a href="#slots" class="hover:text-white transition">Investment Slots</a></li>
-            <li><a href="#how" class="hover:text-white transition">How It Works</a></li>
-            <li><button onclick="openModal('terms')" class="hover:text-white transition">Terms & Conditions</button></li>
-            <li><button onclick="openModal('privacy')" class="hover:text-white transition">Privacy Policy</button></li>
-          </ul>
-
-      <div class="border-t border-gray-700 pt-8">
-        <p class="text-center text-gray-400 text-sm">© 2024 InvestHub. All rights reserved.</p>
+        <div id="login-section">
+          <form id="login-form">
+            <input id="login-email" type="email" placeholder="Email" required />
+            <input id="login-password" type="password" placeholder="Password" required />
+            <button class="btn primary" type="submit">Login</button>
+          </form>
+        </div>
+        <div id="signup-section" class="hidden">
+          <div id="signup-step-email">
+            <input id="signup-email" type="email" placeholder="Email" required />
+            <button class="btn primary" onclick="window.Auth.sendSignupOtp()">Send OTP</button>
+          </div>
+          <div id="signup-step-otp" class="hidden">
+            <input id="signup-otp" type="text" placeholder="Enter OTP" required />
+            <button class="btn primary" onclick="window.Auth.verifySignupOtp()">Verify OTP</button>
+          </div>
+          <div id="signup-step-password" class="hidden">
+            <input id="signup-password" type="password" placeholder="Create Password" required />
+            <button class="btn primary" onclick="window.Auth.finishSignup()">Create Account</button>
+          </div>
+        </div>
       </div>
-    </footer>
-          
-  <!-- AUTH MODAL -->
-<div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-  <div class="bg-white w-full max-w-md rounded-2xl shadow-xl p-6 relative">
-
-    <!-- Close -->
-    <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-gray-500 text-xl">×</button>
-
-    <!-- Referral Code Input -->
-            <div class="mb-4">
-              <label for="signup-referral" class="block text-sm font-medium text-gray-700 mb-1">Referral Code (Optional)</label>
-              <input type="text" id="signup-referral" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="Enter referral code if you have one">
-            </div
-  
-              <!-- TABS -->
-    <div class="flex mb-6 border-b">
-      <button id="tab-login" onclick="showLogin()" class="flex-1 py-2 font-semibold border-b-2 border-blue-600">
-        Login
-      </button>
-      <button id="tab-signup" onclick="showSignup()" class="flex-1 py-2 font-semibold text-gray-500">
-        Sign Up
-      </button>
     </div>
 
-    <!-- ================= LOGIN ================= -->
-    <div id="login-section">
-      <form onsubmit="handleLogin(event)">
-        <input id="login-email" type="email" placeholder="Email"
-          class="w-full mb-3 p-3 border rounded-lg" required>
-
-        <input id="login-password" type="password" placeholder="Password"
-          class="w-full mb-4 p-3 border rounded-lg" required>
-
-        <button type="submit"
-          class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition">
-          Login
-        </button>
-      </form>
+    <div id="deposit-modal" class="modal hidden">
+      <div class="modal-card deposit-modal-card">
+        <button class="close" onclick="window.UI.closeModal('deposit')">✕</button>
+        <h3>Deposit Funds</h3>
+        <form id="deposit-form">
+          <input type="number" id="deposit-amount" required min="2000" step="100" placeholder="Minimum ₹2,000" />
+          <input type="hidden" id="deposit-method" value="razorpay" />
+          <div id="deposit-error" class="hidden error"></div>
+          <div id="deposit-success" class="hidden success"></div>
+          <button type="submit" id="deposit-btn" class="btn primary">Pay Securely</button>
+        </form>
+      </div>
     </div>
 
-    <!-- ================= SIGNUP ================= -->
-    <div id="signup-section" class="hidden">
-
-      <!-- STEP 1 EMAIL -->
-      <div id="signup-step-email">
-        <input id="signup-email" type="email" placeholder="Enter your email"
-          class="w-full mb-4 p-3 border rounded-lg">
-
-        <button onclick="sendSignupOtp()"
-          class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold">
-          Send OTP
-        </button>
+    <div id="withdraw-modal" class="modal hidden">
+      <div class="modal-card">
+        <button class="close" onclick="window.UI.closeModal('withdraw')">✕</button>
+        <h3>Withdraw</h3>
+        <p>Withdrawable (real balance): <span id="withdraw-balance">₹0</span></p>
+        <form id="withdraw-form">
+          <input type="number" id="withdraw-amount" required min="1000" step="100" placeholder="Amount" />
+          <input type="text" id="withdraw-upi" required placeholder="yourname@upi" />
+          <div id="withdraw-error" class="hidden error"></div>
+          <div id="withdraw-success" class="hidden success"></div>
+          <button type="submit" id="withdraw-btn" class="btn primary">Request Withdrawal</button>
+        </form>
       </div>
-
-      <!-- STEP 2 OTP -->
-      <div id="signup-step-otp" class="hidden">
-        <input id="signup-otp" type="text" placeholder="Enter OTP"
-          class="w-full mb-4 p-3 border rounded-lg">
-
-        <button onclick="verifySignupOtp()"
-          class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold">
-          Verify OTP
-        </button>
-      </div>
-
-      <!-- STEP 3 PASSWORD -->
-      <div id="signup-step-password" class="hidden">
-        <input id="signup-password" type="password" placeholder="Create Password"
-          class="w-full mb-4 p-3 border rounded-lg">
-
-        <button onclick="finishSignup()"
-          class="w-full bg-green-600 text-white py-3 rounded-lg font-semibold">
-          Create Account
-        </button>
-      </div>
-
     </div>
 
-  </div>
-</div>
-      
-      <!-- Deposit Modal -->
-      <div id="deposit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-lg w-full max-w-md max-h-[90%] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-2xl font-bold text-green-600">Deposit Funds</h3>
-              <button onclick="closeModal('deposit')" class="text-gray-400 hover:text-gray-600 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            
-            <form id="deposit-form" onsubmit="handleDeposit(event)" class="space-y-6">
-              <!-- Custom Amount Input -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Amount (₹)</label>
-                <input type="number" id="deposit-amount" required min="2000" step="100" class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-lg font-bold" placeholder="Minimum ₹2,000">
-                <p class="text-gray-500 text-xs mt-1">Minimum: ₹2,000</p>
-              </div>
-              
-              <!-- Quick Select -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Quick Select</label>
-                <div class="grid grid-cols-4 gap-2">
-                  <button type="button" onclick="setDepositAmount(2000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹2K</button>
-                  <button type="button" onclick="setDepositAmount(5000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹5K</button>
-                  <button type="button" onclick="setDepositAmount(10000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹10K</button>
-                  <button type="button" onclick="setDepositAmount(15000)" class="py-2 bg-gray-100 hover:bg-green-100 text-green-600 rounded-lg font-bold transition">₹15K</button>
-                </div>
-              </div>
-              
-              <!-- Payment Methods -->
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
-                <div class="grid grid-cols-2 gap-3">
-                  <button type="button" onclick="selectPaymentMethod('phonepe')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
-                    <span class="text-2xl">📱</span>
-                    <span class="text-xs font-medium text-gray-600">PhonePe</span>
-                  </button>
-                  <button type="button" onclick="selectPaymentMethod('gpay')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
-                    <span class="text-2xl">💳</span>
-                    <span class="text-xs font-medium text-gray-600">Google Pay</span>
-                  </button>
-                  <button type="button" onclick="selectPaymentMethod('paytm')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
-                    <span class="text-2xl">💰</span>
-                    <span class="text-xs font-medium text-gray-600">Paytm</span>
-                  </button>
-                  <button type="button" onclick="selectPaymentMethod('bank')" class="payment-option p-4 border-2 border-gray-300 rounded-lg flex flex-col items-center gap-2 transition">
-                    <span class="text-2xl">🏦</span>
-                    <span class="text-xs font-medium text-gray-600">Bank</span>
-                  </button>
-                </div>
-                <input type="hidden" id="deposit-method" required>
-              </div>
-              
-              <div id="deposit-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded"></div>
-              <div id="deposit-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded"></div>
-              
-              <button type="submit" id="deposit-btn" class="w-full bg-green-600 text-white font-bold py-3 rounded-lg hover:bg-green-700 transition">Deposit Now</button>
-            </form>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Withdraw Modal -->
-      <div id="withdraw-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-lg w-full max-w-md max-h-[90%] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-2xl font-bold text-green-600">Withdraw Funds</h3>
-              <button onclick="closeModal('withdraw')" class="text-gray-400 hover:text-gray-600 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            
-            <div class="bg-green-50 rounded-lg p-4 mb-6">
-              <p class="text-gray-600 text-sm">Available Balance</p>
-              <p id="withdraw-balance" class="text-3xl font-bold text-green-600">₹0</p>
-            </div>
-            
-            <form id="withdraw-form" onsubmit="handleWithdraw(event)" class="space-y-4">
-              <div>
-                <label for="withdraw-amount" class="block text-sm font-medium text-gray-700 mb-1">Amount (₹)</label>
-                <input type="number" id="withdraw-amount" required min="1000" step="100" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition text-lg font-bold" placeholder="Minimum ₹1,000">
-              </div>
-              
-              <div>
-                <label for="withdraw-upi" class="block text-sm font-medium text-gray-700 mb-1">UPI ID</label>
-                <input type="text" id="withdraw-upi" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:border-green-500 outline-none input-focus transition" placeholder="yourname@upi">
-              </div>
-              
-              <div id="withdraw-error" class="hidden text-red-600 text-sm bg-red-50 p-3 rounded"></div>
-              <div id="withdraw-success" class="hidden text-green-600 text-sm bg-green-50 p-3 rounded"></div>
-              
-              <button type="submit" id="withdraw-btn" class="w-full bg-green-600 text-white font-bold py-2 rounded-lg hover:bg-green-700 transition">Withdraw</button>
-            </form>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Terms & Conditions Modal -->
-      <div id="terms-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90%] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-2xl font-bold text-gray-800">Terms & Conditions</h3>
-              <button onclick="closeModal('terms')" class="text-gray-400 hover:text-gray-600 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            
-            <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
-              <h4 class="text-lg font-bold text-gray-800">1. Investment Disclaimer</h4>
-              <p class="text-red-600 font-bold">⚠️ IMPORTANT: All investments carry substantial risk. Past performance is not indicative of future results. InvestHub does NOT guarantee any returns on investments. You may lose some or all of your investment.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">2. No Guaranteed Returns</h4>
-              <p>The investment slots and returns displayed are for illustration purposes only. These should not be considered as promises or guarantees of actual returns. Market conditions, economic factors, and unforeseen events may affect investment outcomes.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">3. Investment Conditions</h4>
-              <ul class="list-disc pl-5 space-y-1">
-                <li>Minimum investment amount is ₹2,000</li>
-                <li>Maximum investment amount is ₹75,000 per slot</li>
-                <li>Investment periods range from 30 to 230 days</li>
-                <li>Early withdrawal may incur penalties</li>
-                <li>All investments are subject to verification</li>
-              </ul>
-              
-              <h4 class="text-lg font-bold text-gray-800">4. User Responsibilities</h4>
-              <p>You are solely responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. You agree to notify InvestHub immediately of any unauthorized access.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">5. Prohibited Activities</h4>
-              <p>Users agree not to engage in money laundering, fraud, or any illegal activities. InvestHub reserves the right to suspend or terminate accounts involved in suspicious activities.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">6. Fees and Charges</h4>
-              <p>InvestHub may charge processing fees and other charges as disclosed during the transaction. These fees will be clearly communicated before you complete any transaction.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">7. Modification of Terms</h4>
-              <p>InvestHub reserves the right to modify these terms at any time. Continued use of the platform constitutes acceptance of updated terms.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">8. Governing Law</h4>
-              <p>These terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of Indian courts.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Privacy Policy Modal -->
-      <div id="privacy-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
-        <div class="bg-white rounded-lg w-full max-w-2xl max-h-[90%] overflow-y-auto">
-          <div class="p-6">
-            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-2xl font-bold text-gray-800">Privacy Policy</h3>
-              <button onclick="closeModal('privacy')" class="text-gray-400 hover:text-gray-600 transition">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-              </button>
-            </div>
-            
-            <div class="prose prose-sm max-w-none text-gray-700 space-y-4">
-              <p><strong>Last Updated:</strong> January 2024</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">1. Information We Collect</h4>
-              <p>We collect information you provide directly to us, including your name, email address, phone number, payment information, and account credentials. We also automatically collect information about your device and how you interact with our platform.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">2. How We Use Your Information</h4>
-              <p>We use the information we collect to:</p>
-              <ul class="list-disc pl-5 space-y-1">
-                <li>Process your deposits, withdrawals, and investments</li>
-                <li>Verify your identity and prevent fraud</li>
-                <li>Provide customer support and respond to inquiries</li>
-                <li>Send you transaction confirmations and important updates</li>
-                <li>Comply with legal and regulatory requirements</li>
-              </ul>
-              
-              <h4 class="text-lg font-bold text-gray-800">3. Data Security</h4>
-              <p>We implement industry-standard security measures to protect your personal information, including SSL encryption for all transactions. However, no method of transmission over the internet is completely secure.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">4. Information Sharing</h4>
-              <p>We do not share your personal information with third parties except as required by law or to provide services. We may share information with payment processors and legal authorities when necessary.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">5. Cookies and Tracking</h4>
-              <p>We use cookies and similar tracking technologies to enhance your experience. You can control cookie settings in your browser preferences.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">6. Your Rights</h4>
-              <p>You have the right to access, update, or delete your personal information. You may contact us at support@investhub.com to exercise these rights.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">7. Retention of Information</h4>
-              <p>We retain your information for as long as necessary to provide services and comply with legal obligations. Deleted accounts may have information retained for record-keeping purposes.</p>
-              
-              <h4 class="text-lg font-bold text-gray-800">8. Contact Us</h4>
-              <p>If you have privacy concerns, please contact us at support@investhub.com or call +91 9876543210.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Toast Container -->
-      <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
-      
-    </div>
-    
+    <div id="toast-container"></div>
   </div>
 
-<script>
-
-let signupEmailTemp = null;
-
-// ================= MODAL CONTROL =================
-
-function openAuthModal() {
-  document.getElementById("auth-modal").classList.remove("hidden");
-}
-
-function closeAuthModal() {
-  document.getElementById("auth-modal").classList.add("hidden");
-}
-
-function showLogin() {
-  document.getElementById("login-section").classList.remove("hidden");
-  document.getElementById("signup-section").classList.add("hidden");
-
-  document.getElementById("tab-login").classList.add("border-blue-600");
-  document.getElementById("tab-signup").classList.remove("border-blue-600");
-}
-
-function showSignup() {
-  document.getElementById("login-section").classList.add("hidden");
-  document.getElementById("signup-section").classList.remove("hidden");
-
-  document.getElementById("tab-login").classList.remove("border-blue-600");
-  document.getElementById("tab-signup").classList.add("border-blue-600");
-}
-
-// ================= LOGIN =================
-
-async function handleLogin(e) {
-  e.preventDefault();
-
-  const email = document.getElementById("login-email").value;
-  const password = document.getElementById("login-password").value;
-
-  const { error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password
-  });
-
-  if (error) return alert(error.message);
-
-  alert("Login successful");
-  closeAuthModal();
-}
-
-// ================= SIGNUP STEP 1 =================
-
-async function sendSignupOtp() {
-  const email = document.getElementById("signup-email").value;
-  if (!email) return alert("Enter email");
-
-  signupEmailTemp = email;
-
-  const { error } = await supabaseClient.auth.signInWithOtp({
-    email,
-    options: { shouldCreateUser: true }
-  });
-
-  if (error) return alert(error.message);
-
-  document.getElementById("signup-step-email").classList.add("hidden");
-  document.getElementById("signup-step-otp").classList.remove("hidden");
-
-  alert("OTP sent to your email");
-}
-
-// ================= SIGNUP STEP 2 =================
-
-async function verifySignupOtp() {
-  const otp = document.getElementById("signup-otp").value;
-
-  const { error } = await supabaseClient.auth.verifyOtp({
-    email: signupEmailTemp,
-    token: otp,
-    type: "email"
-  });
-
-  if (error) return alert(error.message);
-
-  document.getElementById("signup-step-otp").classList.add("hidden");
-  document.getElementById("signup-step-password").classList.remove("hidden");
-
-  alert("Email verified");
-}
-
-// ================= SIGNUP STEP 3 =================
-
-async function finishSignup() {
-  const password = document.getElementById("signup-password").value;
-
-  const { error } = await supabaseClient.auth.updateUser({
-    password
-  });
-
-  if (error) return alert(error.message);
-
-  alert("Account created successfully");
-  closeAuthModal();
-}
-<script>
-
-// ==========================================
-// SUPABASE CONFIG
-// ==========================================
-
-const { createClient } = supabase;
-
-const supabaseClient = createClient(
-  "https://vwsbxvpghoolfqyxyovf.supabase.co",
-  "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
-);
-
-let currentUser = null;
-
-// ==========================================
-// AUTH STATE LISTENER
-// ==========================================
-
-supabaseClient.auth.onAuthStateChange(async (event, session) => {
-
-  if (session?.user) {
-    currentUser = session.user;
-    await ensureWalletExists();
-    await loadWallet();
-  } else {
-    currentUser = null;
-  }
-
-});
-
-// ==========================================
-// ENSURE WALLET EXISTS
-// ==========================================
-
-async function ensureWalletExists() {
-
-  const { data } = await supabaseClient
-    .from("wallet")
-    .select("*")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (!data) {
-    await supabaseClient.from("wallet").insert({
-      user_id: currentUser.id,
-      balance: 0
-    });
-  }
-}
-
-// ==========================================
-// LOAD WALLET BALANCE
-// ==========================================
-
-async function loadWallet() {
-
-  if (!currentUser) return;
-
-  const { data } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (data) {
-
-    const formatted = formatCurrency(data.balance);
-
-    const balanceDisplay = document.getElementById("withdraw-balance");
-    if (balanceDisplay) balanceDisplay.innerText = formatted;
-
-  }
-}
-
-// ==========================================
-// DEPOSIT SYSTEM
-// ==========================================
-
-async function handleDeposit(event) {
-  event.preventDefault();
-
-  if (!currentUser) {
-    showToast("Please login first", "error");
-    return;
-  }
-
-  const amount = parseFloat(document.getElementById("deposit-amount").value);
-
-  if (!amount || amount < 2000) {
-    showToast("Minimum deposit ₹2000", "error");
-    return;
-  }
-
-  const { data: wallet } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  const newBalance = (wallet?.balance || 0) + amount;
-
-  const { error } = await supabaseClient
-    .from("wallet")
-    .update({ balance: newBalance })
-    .eq("user_id", currentUser.id);
-
-  if (error) {
-    showToast(error.message, "error");
-    return;
-  }
-
-  showToast("Deposit successful", "success");
-  document.getElementById("deposit-form").reset();
-  loadWallet();
-}
-
-// ==========================================
-// WITHDRAW (ADMIN APPROVAL SYSTEM)
-// ==========================================
-
-async function handleWithdraw(event) {
-  event.preventDefault();
-
-  if (!currentUser) {
-    showToast("Please login first", "error");
-    return;
-  }
-
-  const amount = parseFloat(document.getElementById("withdraw-amount").value);
-  const upi = document.getElementById("withdraw-upi").value;
-
-  const errorBox = document.getElementById("withdraw-error");
-  const successBox = document.getElementById("withdraw-success");
-
-  errorBox.classList.add("hidden");
-  successBox.classList.add("hidden");
-
-  if (!amount || amount < 1000) {
-    errorBox.textContent = "Minimum withdrawal ₹1000";
-    errorBox.classList.remove("hidden");
-    return;
-  }
-
-  const { data: wallet } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", currentUser.id)
-    .single();
-
-  if (!wallet || wallet.balance < amount) {
-    errorBox.textContent = "Insufficient balance";
-    errorBox.classList.remove("hidden");
-    return;
-  }
-
-  // Insert pending withdrawal
-  const { error } = await supabaseClient
-    .from("withdrawals")
-    .insert({
-      user_id: currentUser.id,
-      amount: amount,
-      upi_id: upi,
-      status: "pending"
-    });
-
-  if (error) {
-    errorBox.textContent = error.message;
-    errorBox.classList.remove("hidden");
-    return;
-  }
-
-  successBox.textContent = "Withdrawal request submitted. Awaiting admin approval.";
-  successBox.classList.remove("hidden");
-
-  document.getElementById("withdraw-form").reset();
-}
-
-// ==========================================
-// ADMIN APPROVAL FUNCTION
-// (Use in admin panel)
-// ==========================================
-
-async function approveWithdrawal(withdrawalId) {
-
-  const { data: withdrawal } = await supabaseClient
-    .from("withdrawals")
-    .select("*")
-    .eq("id", withdrawalId)
-    .single();
-
-  if (!withdrawal) return;
-
-  const { data: wallet } = await supabaseClient
-    .from("wallet")
-    .select("balance")
-    .eq("user_id", withdrawal.user_id)
-    .single();
-
-  const newBalance = wallet.balance - withdrawal.amount;
-
-  await supabaseClient
-    .from("wallet")
-    .update({ balance: newBalance })
-    .eq("user_id", withdrawal.user_id);
-
-  await supabaseClient
-    .from("withdrawals")
-    .update({ status: "approved" })
-    .eq("id", withdrawalId);
-
-}
-
-// ==========================================
-// UTILITIES
-// ==========================================
-
-function formatCurrency(amount) {
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: "INR",
-    minimumFractionDigits: 0
-  }).format(amount);
-}
-
-function showToast(message, type="info") {
-
-  const container = document.createElement("div");
-  container.className = "fixed top-5 right-5 z-50";
-
-  const toast = document.createElement("div");
-  toast.className = "bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition";
-  toast.innerText = message;
-
-  if (type === "error") {
-    toast.className = "bg-red-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition";
-  }
-
-  container.appendChild(toast);
-  document.body.appendChild(container);
-
-  setTimeout(() => toast.classList.remove("translate-x-full"), 10);
-  setTimeout(() => {
-    toast.classList.add("translate-x-full");
-    setTimeout(() => container.remove(), 300);
-  }, 3000);
-}
-
-</script>
-</script>
-
+  <script type="module" src="js/app.js"></script>
 </body>
 </html>
