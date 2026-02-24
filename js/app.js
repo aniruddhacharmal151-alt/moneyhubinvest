@@ -92,6 +92,31 @@ export const App = {
     Payments.openDepositModal();
   },
 
+  updateProfileSection() {
+    const email = this.currentUser?.email || '—';
+    const userId = this.currentUser?.id || '—';
+    document.getElementById('profile-email').textContent = email;
+    document.getElementById('profile-user-id').textContent = userId;
+  },
+
+  setupMenuNavigation() {
+    const nav = document.getElementById('main-nav');
+    // Keep all top-menu items disabled before login and activate them after auth.
+    nav.addEventListener('click', (event) => {
+      const link = event.target.closest('a[data-section]');
+      if (!link) return;
+      if (!this.currentUser) {
+        event.preventDefault();
+        UI.showToast('Please login to access menu sections.', 'error');
+        return;
+      }
+      event.preventDefault();
+      const target = document.getElementById(link.dataset.section);
+      target?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      nav.classList.remove('open-mobile');
+    });
+  },
+
   renderAuthState() {
     const isLoggedIn = !!this.currentUser;
     document.getElementById('auth-buttons').classList.toggle('hidden', isLoggedIn);
@@ -102,17 +127,21 @@ export const App = {
     const showAdmin = Admin.isAdmin(this.currentUser);
     document.getElementById('admin-panel').classList.toggle('hidden', !showAdmin);
     document.querySelectorAll('.admin-only').forEach((el) => el.classList.toggle('hidden', !showAdmin));
+    document.querySelectorAll('.requires-login').forEach((el) => el.classList.toggle('disabled-link', !isLoggedIn));
+    this.updateProfileSection();
   },
 
   async bootstrap() {
     document.getElementById('login-form').addEventListener('submit', Auth.handleLogin);
-    document.getElementById('deposit-form').addEventListener('submit', Payments.handleDeposit);
+    document.getElementById('deposit-form').addEventListener('submit', Payments.handleDeposit.bind(Payments));
+    Payments.bindPaymentTriggers();
     document.getElementById('withdraw-form').addEventListener('submit', this.handleWithdraw.bind(this));
     document.getElementById('claim-bonus-btn').addEventListener('click', this.claimDailyBonus.bind(this));
 
     document.getElementById('menu-toggle').addEventListener('click', () => {
       document.getElementById('main-nav').classList.toggle('open-mobile');
     });
+    this.setupMenuNavigation();
 
     document.getElementById('admin-withdrawals-table').addEventListener('click', async (e) => {
       const btn = e.target.closest('button[data-id]');
@@ -124,6 +153,8 @@ export const App = {
       this.currentUser = session?.user || null;
       UI.transitionTo(() => this.renderAuthState());
       if (this.currentUser) {
+        // After successful login/session restore, always land on Home dashboard and load wallet/activity.
+        window.location.hash = '#dashboard-layout';
         await this.ensureWalletExists();
         await this.loadWallet();
         await this.loadTransactions();

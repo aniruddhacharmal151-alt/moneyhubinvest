@@ -14,7 +14,59 @@ async function ensureRazorpayScript() {
 }
 
 export const Payments = {
+  selectedPaymentApp: 'UPI',
+
   openDepositModal() { window.UI.openModal('deposit'); },
+
+  bindPaymentTriggers() {
+    // Unified third-party payment triggers: PhonePe/Paytm/GPay/UPI all open one Razorpay checkout.
+    document.querySelectorAll('.payment-trigger').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        if (!window.App.currentUser) return window.UI.openAuthModal('login');
+        this.selectedPaymentApp = btn.dataset.app || 'UPI';
+        this.openDepositModal();
+      });
+    });
+  },
+
+  async recordTransaction({ amount, paymentId, status, orderId }) {
+    const payload = {
+      user_id: window.App.currentUser.id,
+      payment_id: paymentId,
+      order_id: orderId,
+      amount,
+      status,
+      provider: 'razorpay'
+    };
+    await window.App.supabaseClient.from('deposits').insert(payload);
+    await window.App.supabaseClient.from('transactions').insert({
+      user_id: window.App.currentUser.id,
+      type: 'deposit',
+      amount,
+      status,
+      payment_id: paymentId
+    });
+  },
+
+  async finalizeSuccessfulPayment({ amount, paymentId, orderId }) {
+    await this.recordTransaction({ amount, paymentId, orderId, status: 'success' });
+
+    const { data: wallet } = await window.App.supabaseClient
+      .from('wallet')
+      .select('real_balance,balance')
+      .eq('user_id', window.App.currentUser.id)
+      .maybeSingle();
+    const nextBalance = (wallet?.real_balance ?? wallet?.balance ?? 0) + amount;
+    await window.App.supabaseClient
+      .from('wallet')
+      .update({ real_balance: nextBalance })
+      .eq('user_id', window.App.currentUser.id);
+
+    // Refresh wallet + activity immediately so the user sees real-time post-payment updates.
+    await window.App.loadWallet();
+    await window.App.loadTransactions();
+  },
+
   async handleDeposit(event) {
     event.preventDefault();
     const amount = Number(document.getElementById('deposit-amount').value);
@@ -34,24 +86,50 @@ export const Payments = {
         currency: 'INR',
         order_id: data.orderId,
         name: 'MoneyHub Invest',
-        description: 'Wallet Deposit',
+        description: `Wallet Deposit via ${this.selectedPaymentApp}`,
+        method: { upi: true, card: true, netbanking: true, wallet: true },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: 'Pay via UPI Apps',
+                instruments: [
+                  { method: 'upi', flows: ['collect', 'intent'] }
+                ]
+              }
+            },
+            sequence: ['block.upi', 'block.other'],
+            preferences: { show_default_blocks: true }
+          }
+        },
         theme: { color: '#4f8cff' },
         handler: async (response) => {
-          await window.App.supabaseClient.from('deposits').insert({
-            user_id: window.App.currentUser.id,
-            amount,
-            provider: 'razorpay',
-            order_id: data.orderId,
-            payment_id: response.razorpay_payment_id,
-            status: 'paid_pending_webhook'
-          });
-          successBox.textContent = 'Payment captured. Balance will update after secure webhook confirmation.';
+          await this.finalizeSuccessfulPayment({ amount, paymentId: response.razorpay_payment_id, orderId: data.orderId });
+          successBox.textContent = 'Payment successful and wallet updated.';
           successBox.classList.remove('hidden');
-          window.UI.showToast('Awaiting Razorpay webhook confirmation', 'success');
+          window.UI.showToast('Deposit successful', 'success');
+        },
+        modal: {
+          ondismiss: async () => {
+            await this.recordTransaction({ amount, paymentId: null, orderId: data.orderId, status: 'cancelled' });
+            errorBox.textContent = 'Payment cancelled. Please retry.';
+            errorBox.classList.remove('hidden');
+          }
         },
         prefill: { email: window.App.currentUser.email }
       };
-      new window.Razorpay(options).open();
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', async (resp) => {
+        await this.recordTransaction({
+          amount,
+          paymentId: resp.error?.metadata?.payment_id || null,
+          orderId: resp.error?.metadata?.order_id || data.orderId,
+          status: 'failed'
+        });
+        errorBox.textContent = 'Payment failed. Please retry.';
+        errorBox.classList.remove('hidden');
+      });
+      rzp.open();
     } catch (err) {
       errorBox.textContent = err.message || 'Unable to start Razorpay checkout';
       errorBox.classList.remove('hidden');

@@ -18,10 +18,11 @@
       <button id="menu-toggle" class="hamburger" aria-label="Toggle menu">☰</button>
 
       <nav id="main-nav" class="nav-links">
-        <a href="#offers" data-route="marketing">Offers</a>
-        <a href="#slots" data-route="marketing">Plans</a>
-        <a href="#how" data-route="marketing">How it works</a>
-        <a href="#dashboard" data-route="dashboard" class="user-only">Dashboard</a>
+        <a href="#offers" data-section="dashboard-layout" class="requires-login">Offers</a>
+        <a href="#slots" data-section="transactions-section" class="requires-login">Investment Plans</a>
+        <a href="#dashboard-layout" data-section="dashboard-layout" class="requires-login user-only">Dashboard</a>
+        <a href="#transactions-section" data-section="transactions-section" class="requires-login user-only">Recent Activity</a>
+        <a href="#profile-section" data-section="profile-section" class="requires-login user-only">Profile</a>
         <a href="#admin" data-route="admin" class="admin-only">Admin</a>
       </nav>
 
@@ -82,6 +83,12 @@
             <h3>Premium Deposits</h3>
             <p>Secure payments powered by Razorpay</p>
             <p class="small-text">Supports UPI, net banking, cards, and wallets.</p>
+            <div class="upi-apps">
+              <button type="button" class="btn soft payment-trigger" data-app="PhonePe">Pay via PhonePe</button>
+              <button type="button" class="btn soft payment-trigger" data-app="Paytm">Pay via Paytm</button>
+              <button type="button" class="btn soft payment-trigger" data-app="Google Pay">Pay via Google Pay</button>
+              <button type="button" class="btn soft payment-trigger" data-app="Any UPI App">Pay via UPI</button>
+            </div>
             <button class="btn primary" onclick="window.Payments.openDepositModal()">Deposit with Razorpay</button>
           </section>
 
@@ -98,6 +105,12 @@
             <p>Your code: <strong id="referral-code">—</strong></p>
             <p>Total referrals: <strong id="total-referrals">0</strong></p>
             <p>Earnings: <strong id="referral-earnings">₹0</strong></p>
+          </section>
+
+          <section id="profile-section" class="card">
+            <h3>Profile</h3>
+            <p>Email: <strong id="profile-email">—</strong></p>
+            <p>Member ID: <strong id="profile-user-id">—</strong></p>
           </section>
         </div>
       </section>

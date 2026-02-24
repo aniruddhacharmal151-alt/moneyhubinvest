@@ -19,3 +19,6 @@
 @keyframes pop{from{transform:scale(.95);opacity:0}to{transform:scale(1);opacity:1}} @keyframes slideUp{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
 @media(min-width:900px){.hamburger{display:none}.nav-links{display:flex}.plans-grid{grid-template-columns:repeat(4,1fr)}.dashboard-grid{grid-template-columns:300px 1fr 1fr}}
 .open-mobile{display:flex!important;position:absolute;top:66px;left:1rem;right:1rem;background:#0f1730;padding:.8rem;border-radius:.7rem;border:1px solid #263466;flex-direction:column}
+
+.nav-links a.disabled-link{pointer-events:none;opacity:.45;cursor:not-allowed}
+.upi-apps{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin:.8rem 0}
