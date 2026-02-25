@@ -12,6 +12,11 @@
     body {
       font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background: radial-gradient(circle at top, #dbeafe 0%, #f8fafc 35%, #eef2ff 100%);
+      transition: background .3s ease-in-out;
+    }
+    body.mobile-dashboard {
+      background: linear-gradient(165deg, #0a1025 0%, #070b18 48%, #02040a 100%);
+      color: #e2e8f0;
     }
     .glass {
       background: linear-gradient(135deg, rgba(255,255,255,.5), rgba(255,255,255,.25));
@@ -53,6 +58,47 @@
       padding-bottom: .25rem;
     }
     .plans-mobile > .plan-card { min-width: 85%; scroll-snap-align: center; }
+    .public-plan-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .85rem;
+    }
+    .public-plan-grid > .plan-card { min-width: 0; }
+
+    .mobile-header-glass, .wallet-glass, .stat-glass, .recent-glass {
+      background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .25);
+      border-radius: 20px;
+    }
+    .wallet-glass {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(170deg, rgba(255,255,255,.11), rgba(255,255,255,.04));
+    }
+    .wallet-glass::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -20px;
+      width: 180px;
+      height: 80px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(251, 191, 36, .35), transparent 70%);
+      pointer-events: none;
+    }
+    .fade-up { animation: fadeUp .3s ease-in-out both; }
+    .delay-1 { animation-delay: .1s; }
+    .particle-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 25%, rgba(255,255,255,.11) 0 1px, transparent 2px), radial-gradient(circle at 80% 18%, rgba(255,255,255,.09) 0 1px, transparent 2px), radial-gradient(circle at 45% 70%, rgba(255,255,255,.08) 0 1px, transparent 2px);
+      pointer-events: none;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px);} to { opacity: 1; transform: translateY(0);} }
 
     .fade-slide-enter { animation: slideFade .4s ease both; }
     @keyframes slideFade { from { opacity: 0; transform: translateY(18px);} to { opacity: 1; transform: translateY(0);} }
@@ -61,10 +107,12 @@
     @media (min-width: 768px) {
       .plans-mobile { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); overflow: visible; }
       .plans-mobile > .plan-card { min-width: 0; }
+      .public-plan-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
       @keyframes fadeCard { from { opacity: 0; } to { opacity: 1; } }
     }
 
     @media (max-width: 767px) {
+      #dashboard-view { position: relative; }
       .mobile-sheet { align-items: end; }
       .mobile-sheet > .sheet-card {
         width: 100%;
@@ -103,13 +151,51 @@
           <h1 class="text-3xl font-bold">Investment Plans</h1>
           <p class="text-slate-600">Login to activate plans and track live returns.</p>
         </div>
-        <div id="public-plan-list" class="plans-mobile"></div>
+        <div id="public-plan-list" class="public-plan-grid"></div>
         <div class="text-center">
           <button id="public-load-more" onclick="loadMorePlans('public')" class="px-5 py-2 rounded-xl glass btn-premium">Load More Plans</button>
+        </div>
+        <div class="glass rounded-2xl p-5">
+          <h3 class="text-xl font-semibold mb-3">How it Works</h3>
+          <div class="grid sm:grid-cols-3 gap-3 text-sm text-slate-700">
+            <div>1. Sign up/login and choose a plan.</div>
+            <div>2. Activate using secure Razorpay payment.</div>
+            <div>3. Track live countdown and withdraw after maturity.</div>
+          </div>
+        </div>
+        <div class="glass rounded-2xl p-5 text-sm text-slate-700">
+          <h3 class="text-xl font-semibold mb-2">Referral Program</h3>
+          <p>Share your referral code with friends and earn <b>₹100</b> bonus after their first successful activation.</p>
         </div>
       </section>
 
       <section id="dashboard-view" class="hidden space-y-6">
+        <section class="md:hidden particle-bg relative space-y-4">
+          <div class="mobile-header-glass p-4 fade-up">
+            <div class="flex items-center justify-between mb-3">
+              <div class="w-9 h-9 rounded-full bg-white/15 border border-white/20"></div>
+              <button class="w-10 h-10 rounded-xl mobile-header-glass !rounded-xl !p-0 text-white/80">☰</button>
+            </div>
+            <p class="text-sm text-slate-300">Welcome Back, <span id="mobile-welcome-name">User</span></p>
+            <h2 class="text-3xl font-bold text-white">Your Dashboard</h2>
+          </div>
+          <div class="wallet-glass p-5 fade-up delay-1 tap">
+            <p class="text-sm text-slate-300">Wallet Balance</p>
+            <p id="wallet-balance-mobile" class="font-bold text-3xl text-white">₹0</p>
+            <p class="text-xs text-slate-300">Available Balance</p>
+          </div>
+          <div class="grid grid-cols-2 gap-3 fade-up delay-1">
+            <div class="stat-glass p-3">
+              <p class="text-xs text-slate-300">Total Earnings</p>
+              <p id="total-earnings" class="font-bold text-white">₹0</p>
+            </div>
+            <div class="stat-glass p-3">
+              <p class="text-xs text-slate-300">Active Investments</p>
+              <p id="active-count" class="font-bold text-white">0</p>
+            </div>
+          </div>
+        </section>
+
         <div class="glass rounded-2xl p-4 md:p-6">
           <h2 class="text-2xl font-bold">Home Dashboard</h2>
           <p class="text-slate-600">Choose a plan and pay securely with Razorpay.</p>
@@ -145,8 +231,24 @@
           <h3 class="text-xl font-semibold mb-2">Live Investments</h3>
           <div id="active-investments" class="space-y-2"></div>
         </section>
+
+        <section class="recent-glass rounded-2xl p-5">
+          <h3 class="text-xl font-semibold mb-2">Recent Transactions</h3>
+          <div id="recent-transactions" class="space-y-2 text-sm"></div>
+        </section>
       </section>
     </main>
+
+    <footer class="mt-10 px-4 pb-8">
+      <div class="max-w-6xl mx-auto glass rounded-2xl p-5 text-sm space-y-3">
+        <h4 class="text-lg font-semibold">Terms & Conditions</h4>
+        <p>No guaranteed returns: investment outcomes may vary and involve market risk. Users must review plan details before activation.</p>
+        <h4 class="text-lg font-semibold">Privacy Policy</h4>
+        <p>We collect only essential account and transaction data to provide wallet, investment, and withdrawal services securely.</p>
+        <h4 class="text-lg font-semibold">Disclaimer</h4>
+        <p>This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</p>
+      </div>
+    </footer>
   </div>
 
   <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
@@ -184,17 +286,19 @@ const { createClient } = supabase;
 const supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
 
 const plans = [
-  { id: 1, name: "Starter", amount: 2000, days: 30, dailyReturn: 90, totalReturn: 4700, aura: "rgba(125,211,252,.32)" },
-  { id: 2, name: "Silver", amount: 5000, days: 45, dailyReturn: 160, totalReturn: 12200, aura: "rgba(196,181,253,.30)" },
-  { id: 3, name: "Gold", amount: 10000, days: 65, dailyReturn: 320, totalReturn: 30800, aura: "rgba(253,224,71,.26)" },
-  { id: 4, name: "Emerald", amount: 12000, days: 75, dailyReturn: 390, totalReturn: 41250, aura: "rgba(110,231,183,.30)" },
-  { id: 5, name: "Sapphire", amount: 30000, days: 160, dailyReturn: 1080, totalReturn: 202800, aura: "rgba(147,197,253,.28)" },
-  { id: 6, name: "Diamond", amount: 40000, days: 230, dailyReturn: 1580, totalReturn: 403400, aura: "rgba(253,186,116,.32)" }
+  { id: 1, name: "Plan A", amount: 6000, days: 35, dailyReturn: 180, totalReturn: 12000, aura: "rgba(125,211,252,.32)" },
+  { id: 2, name: "Plan B", amount: 16000, days: 45, dailyReturn: 420, totalReturn: 26000, aura: "rgba(196,181,253,.30)" },
+  { id: 3, name: "Plan C", amount: 22000, days: 60, dailyReturn: 560, totalReturn: 42000, aura: "rgba(244,114,182,.24)" },
+  { id: 4, name: "Plan D", amount: 30000, days: 75, dailyReturn: 800, totalReturn: 60000, aura: "rgba(110,231,183,.30)" },
+  { id: 5, name: "Plan E", amount: 38000, days: 95, dailyReturn: 1020, totalReturn: 76000, aura: "rgba(147,197,253,.28)" },
+  { id: 6, name: "Plan F", amount: 45000, days: 120, dailyReturn: 1250, totalReturn: 90000, aura: "rgba(253,186,116,.32)" },
+  { id: 7, name: "Plan G", amount: 52000, days: 150, dailyReturn: 1450, totalReturn: 104000, aura: "rgba(167,139,250,.28)" },
+  { id: 8, name: "Plan H", amount: 65000, days: 180, dailyReturn: 1800, totalReturn: 130000, aura: "rgba(250,204,21,.24)" }
 ];
 let currentUser = null;
 let authMode = "login";
-let visiblePublicPlans = 3;
-let visiblePrivatePlans = 3;
+let visiblePublicPlans = 6;
+let visiblePrivatePlans = 4;
 let selectedPlan = null;
 let countdownTimer = null;
 
@@ -257,6 +361,7 @@ function createPlanCard(plan, loggedIn) {
   card.innerHTML = `
     <h4 class="text-lg font-bold">${plan.name}</h4>
     <p class="text-sm text-slate-600 mt-1">${plan.days} Days Cycle</p>
+    <p class="text-sm text-slate-600">Return: ~${Math.round((plan.totalReturn / plan.amount) * 100)}%</p>
     <div class="mt-3 space-y-1 text-sm">
       <p>Daily Return: <span class="font-semibold">${formatCurrency(plan.dailyReturn)}</span></p>
       <p>Total Return: <span class="font-semibold">${formatCurrency(plan.totalReturn)}</span></p>
@@ -316,7 +421,9 @@ async function ensureWalletExists() {
 async function loadWallet() {
   if (!currentUser) return;
   const { data } = await supabaseClient.from("wallet").select("balance").eq("user_id", currentUser.id).single();
-  document.getElementById("wallet-balance").textContent = formatCurrency(data?.balance || 0);
+  const formatted = formatCurrency(data?.balance || 0);
+  document.getElementById("wallet-balance").textContent = formatted;
+  document.getElementById("wallet-balance-mobile").textContent = formatted;
 }
 
 async function payWithRazorpay() {
@@ -377,8 +484,29 @@ async function fetchInvestments() {
   if (!currentUser) return;
   const { data } = await supabaseClient.from("investments").select("*").eq("user_id", currentUser.id).order("start_timestamp", { ascending: false });
   const list = data || [];
+  updateDashboardStats(list);
   renderInvestmentTimers(list);
   renderWithdrawInvestments(list);
+  renderRecentTransactions(list);
+}
+
+function updateDashboardStats(investments = []) {
+  const active = investments.filter(i => i.status === "active").length;
+  const earnings = investments.reduce((sum, i) => {
+    const plan = plans.find(p => p.id === i.plan_id);
+    return sum + Math.max(0, (plan?.totalReturn || i.amount) - i.amount);
+  }, 0);
+  document.getElementById("active-count").textContent = active;
+  document.getElementById("total-earnings").textContent = formatCurrency(earnings);
+}
+
+function renderRecentTransactions(investments = []) {
+  const box = document.getElementById("recent-transactions");
+  box.innerHTML = investments.slice(0, 4).map(i => `
+    <div class="flex items-center justify-between border-b border-white/15 pb-2">
+      <span>Plan #${i.plan_id} Activated</span>
+      <span>${formatCurrency(i.amount)}</span>
+    </div>`).join("") || '<div class="text-slate-400">No recent transactions.</div>';
 }
 
 function renderInvestmentTimers(investments = []) {
@@ -459,12 +587,15 @@ supabaseClient.auth.onAuthStateChange(async (_, session) => {
   document.getElementById("user-menu").classList.toggle("flex", !!currentUser);
 
   if (currentUser) {
+    document.body.classList.toggle("mobile-dashboard", window.matchMedia("(max-width: 768px)").matches);
     document.getElementById("welcome-name").textContent = currentUser.email.split("@")[0];
+    document.getElementById("mobile-welcome-name").textContent = currentUser.email.split("@")[0];
     await ensureWalletExists();
     await loadWallet();
     await fetchInvestments();
     navigate("home");
   } else {
+    document.body.classList.remove("mobile-dashboard");
     renderPlans();
     if (countdownTimer) clearInterval(countdownTimer);
   }
