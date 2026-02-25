@@ -111,6 +111,33 @@
       @keyframes fadeCard { from { opacity: 0; } to { opacity: 1; } }
     }
 
+    .footer-accordion-content {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height .3s ease-in-out, opacity .3s ease-in-out;
+    }
+    .footer-accordion-content.open { max-height: 140px; opacity: 1; }
+    .nav-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      width: 220px;
+      background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(248,250,252,.86));
+      border: 1px solid rgba(148,163,184,.3);
+      box-shadow: 0 14px 28px rgba(15,23,42,.18);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: .5rem;
+      z-index: 60;
+    }
+    .mobile-dashboard .nav-popover {
+      background: linear-gradient(145deg, rgba(15,23,42,.76), rgba(2,6,23,.7));
+      border-color: rgba(148,163,184,.3);
+      color: #e2e8f0;
+    }
+    .menu-item { width: 100%; text-align: left; padding: .6rem .8rem; border-radius: .7rem; transition: all .3s ease-in-out; }
+    .menu-item:hover { background: rgba(148,163,184,.15); }
+
     @media (max-width: 767px) {
       #dashboard-view { position: relative; }
       .mobile-sheet { align-items: end; }
@@ -132,15 +159,36 @@
           <button onclick="openModal('auth','login')" class="px-4 py-2 rounded-xl text-blue-700 btn-premium">Login</button>
           <button onclick="openModal('auth','signup')" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium">Sign Up</button>
         </div>
-        <div id="user-menu" class="hidden items-center gap-2 md:gap-3">
+        <div id="user-menu" class="hidden items-center gap-2 md:gap-3 relative">
           <div class="hidden sm:block text-sm glass rounded-xl px-3 py-2">
             <span id="welcome-name" class="font-semibold"></span>
             <span class="mx-1">|</span>
             <span id="wallet-balance" class="font-bold text-emerald-700">₹0</span>
           </div>
-          <button onclick="navigate('deposit')" class="px-3 py-2 rounded-xl bg-blue-600 text-white btn-premium tap">Deposit</button>
-          <button onclick="navigate('withdraw')" class="px-3 py-2 rounded-xl border border-blue-400 text-blue-700 btn-premium tap">Withdraw</button>
-          <button onclick="logout()" class="px-3 py-2 rounded-xl border border-rose-300 text-rose-600 btn-premium tap">Logout</button>
+          <button onclick="toggleTopMenu()" class="w-10 h-10 rounded-xl glass btn-premium tap">☰</button>
+          <button onclick="toggleProfilePanel()" class="w-10 h-10 rounded-full border border-white/50 glass btn-premium tap flex items-center justify-center font-semibold">👤</button>
+          <div id="top-menu-popover" class="hidden nav-popover left-0">
+            <button onclick="navigateFromMenu('deposit')" class="menu-item">Deposit</button>
+            <button onclick="navigateFromMenu('withdraw')" class="menu-item">Withdraw</button>
+            <button onclick="navigateFromMenu('settings')" class="menu-item">Settings</button>
+            <button onclick="confirmLogout()" class="menu-item text-rose-600">Logout</button>
+          </div>
+          <div id="profile-popover" class="hidden nav-popover right-0 text-sm space-y-2">
+            <div class="px-2 py-1 border-b border-slate-300/35">
+              <div class="font-semibold">Profile</div>
+              <div id="profile-email" class="break-all text-xs"></div>
+              <div id="profile-user-id" class="text-[11px] text-slate-500"></div>
+            </div>
+            <form onsubmit="updateProfileEmail(event)" class="space-y-2 px-2">
+              <input id="profile-new-email" type="email" placeholder="Change email" class="w-full px-2 py-1 rounded-lg border" />
+              <button class="menu-item border border-slate-300">Update Email</button>
+            </form>
+            <form onsubmit="updateProfilePassword(event)" class="space-y-2 px-2 pb-1">
+              <input id="profile-new-password" type="password" placeholder="Set / Change password" class="w-full px-2 py-1 rounded-lg border" />
+              <button class="menu-item border border-slate-300">Update Password</button>
+            </form>
+            <div id="profile-msg" class="px-2 pb-1 text-xs"></div>
+          </div>
         </div>
       </div>
     </nav>
@@ -211,6 +259,10 @@
         <section id="deposit-section" class="hidden glass rounded-2xl p-5">
           <h3 class="text-xl font-semibold mb-2">Deposit</h3>
           <p class="text-slate-600">Select any plan card and tap Deposit to proceed via Razorpay.</p>
+          <div class="mt-4 rounded-xl bg-white/45 p-3 text-sm border border-white/40">
+            <div class="font-semibold">Total Deposited: <span id="deposit-total">₹0</span></div>
+            <div id="deposit-history" class="mt-2 space-y-2"></div>
+          </div>
         </section>
 
         <section id="withdraw-section" class="hidden glass rounded-2xl p-5 space-y-4">
@@ -227,6 +279,21 @@
           </div>
         </section>
 
+        <section id="settings-section" class="hidden glass rounded-2xl p-5 space-y-4">
+          <h3 class="text-xl font-semibold">Settings</h3>
+          <form onsubmit="updateProfileEmail(event)" class="space-y-2 max-w-md">
+            <label class="text-sm font-medium">Change Email</label>
+            <input id="settings-new-email" type="email" placeholder="Enter new email" class="w-full px-3 py-2 rounded-xl border" />
+            <button class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium tap">Update Email</button>
+          </form>
+          <form onsubmit="updateProfilePassword(event)" class="space-y-2 max-w-md">
+            <label class="text-sm font-medium">Set / Change Password</label>
+            <input id="settings-new-password" type="password" placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border" />
+            <button class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
+          </form>
+          <div id="settings-msg" class="text-sm"></div>
+        </section>
+
         <section class="glass rounded-2xl p-5">
           <h3 class="text-xl font-semibold mb-2">Live Investments</h3>
           <div id="active-investments" class="space-y-2"></div>
@@ -240,13 +307,21 @@
     </main>
 
     <footer class="mt-10 px-4 pb-8">
-      <div class="max-w-6xl mx-auto glass rounded-2xl p-5 text-sm space-y-3">
-        <h4 class="text-lg font-semibold">Terms & Conditions</h4>
-        <p>No guaranteed returns: investment outcomes may vary and involve market risk. Users must review plan details before activation.</p>
-        <h4 class="text-lg font-semibold">Privacy Policy</h4>
-        <p>We collect only essential account and transaction data to provide wallet, investment, and withdrawal services securely.</p>
-        <h4 class="text-lg font-semibold">Disclaimer</h4>
-        <p>This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</p>
+      <div class="max-w-6xl mx-auto glass rounded-2xl p-5 text-sm space-y-2">
+        <button onclick="toggleFooterSection('terms')" class="w-full text-left py-2 font-semibold flex items-center justify-between">
+          <span>Terms & Conditions</span><span id="terms-icon">+</span>
+        </button>
+        <div id="terms-content" class="footer-accordion-content text-slate-700">No guaranteed returns: investment outcomes may vary and involve market risk. Users must review plan details before activation.</div>
+
+        <button onclick="toggleFooterSection('privacy')" class="w-full text-left py-2 font-semibold flex items-center justify-between">
+          <span>Privacy Policy</span><span id="privacy-icon">+</span>
+        </button>
+        <div id="privacy-content" class="footer-accordion-content text-slate-700">We collect only essential account and transaction data to provide wallet, investment, and withdrawal services securely.</div>
+
+        <button onclick="toggleFooterSection('disclaimer')" class="w-full text-left py-2 font-semibold flex items-center justify-between">
+          <span>Disclaimer</span><span id="disclaimer-icon">+</span>
+        </button>
+        <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
       </div>
     </footer>
   </div>
@@ -281,6 +356,16 @@
     </div>
   </div>
 
+  <div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-sm glass rounded-2xl p-5 space-y-4">
+      <h3 class="text-lg font-semibold">Do you want to logout?</h3>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeLogoutModal()" class="px-4 py-2 rounded-xl border border-slate-300">Cancel</button>
+        <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-600 text-white">Logout</button>
+      </div>
+    </div>
+  </div>
+
 <script>
 const { createClient } = supabase;
 const supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
@@ -301,8 +386,19 @@ let visiblePublicPlans = 6;
 let visiblePrivatePlans = 4;
 let selectedPlan = null;
 let countdownTimer = null;
+let latestInvestments = [];
 
 function formatCurrency(amount) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(amount); }
+function toggleFooterSection(section) {
+  ["terms", "privacy", "disclaimer"].forEach((key) => {
+    const content = document.getElementById(`${key}-content`);
+    const icon = document.getElementById(`${key}-icon`);
+    const isTarget = key === section;
+    const willOpen = isTarget && !content.classList.contains("open");
+    content.classList.toggle("open", willOpen);
+    icon.textContent = willOpen ? "−" : "+";
+  });
+}
 function formatTime(ms) {
   if (ms <= 0) return "00 : 00 : 00 : 00";
   const sec = Math.floor(ms / 1000);
@@ -350,7 +446,65 @@ async function submitAuth(e) {
   navigate("home");
 }
 
-async function logout() { await supabaseClient.auth.signOut(); }
+async function logout() { closeLogoutModal(); await supabaseClient.auth.signOut(); }
+
+function closeAllNavPopovers() {
+  document.getElementById("top-menu-popover").classList.add("hidden");
+  document.getElementById("profile-popover").classList.add("hidden");
+}
+function toggleTopMenu() {
+  const menu = document.getElementById("top-menu-popover");
+  const profile = document.getElementById("profile-popover");
+  const show = menu.classList.contains("hidden");
+  menu.classList.toggle("hidden", !show);
+  profile.classList.add("hidden");
+}
+function toggleProfilePanel() {
+  const profile = document.getElementById("profile-popover");
+  const menu = document.getElementById("top-menu-popover");
+  const show = profile.classList.contains("hidden");
+  profile.classList.toggle("hidden", !show);
+  menu.classList.add("hidden");
+}
+function navigateFromMenu(section) { navigate(section); closeAllNavPopovers(); }
+function confirmLogout() { closeAllNavPopovers(); document.getElementById("logout-modal").classList.remove("hidden"); document.getElementById("logout-modal").classList.add("flex"); }
+function closeLogoutModal() { document.getElementById("logout-modal").classList.add("hidden"); document.getElementById("logout-modal").classList.remove("flex"); }
+
+async function updateProfileEmail(e) {
+  e.preventDefault();
+  const email = document.getElementById("profile-new-email").value || document.getElementById("settings-new-email").value;
+  const targets = ["profile-msg", "settings-msg"];
+  if (!email) return targets.forEach(id => document.getElementById(id).textContent = "Please enter a new email.");
+  const { error } = await supabaseClient.auth.updateUser({ email });
+  const text = error ? error.message : "Email update requested. Check your inbox to confirm.";
+  targets.forEach(id => document.getElementById(id).textContent = text);
+  document.getElementById("profile-new-email").value = "";
+  document.getElementById("settings-new-email").value = "";
+}
+
+async function updateProfilePassword(e) {
+  e.preventDefault();
+  const password = document.getElementById("profile-new-password").value || document.getElementById("settings-new-password").value;
+  const targets = ["profile-msg", "settings-msg"];
+  if (!password) return targets.forEach(id => document.getElementById(id).textContent = "Please enter a password.");
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  const text = error ? error.message : "Password updated successfully.";
+  targets.forEach(id => document.getElementById(id).textContent = text);
+  document.getElementById("profile-new-password").value = "";
+  document.getElementById("settings-new-password").value = "";
+}
+
+function renderDepositHistory(investments = []) {
+  const total = investments.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+  document.getElementById("deposit-total").textContent = formatCurrency(total);
+  const box = document.getElementById("deposit-history");
+  box.innerHTML = investments.slice(0, 6).map(inv => `
+    <div class="flex items-center justify-between rounded-lg bg-white/50 border border-white/30 px-3 py-2">
+      <span>Plan #${inv.plan_id} • ${new Date(inv.start_timestamp).toLocaleDateString("en-IN")}</span>
+      <span class="font-semibold">${formatCurrency(inv.amount)}</span>
+    </div>
+  `).join("") || '<div class="text-slate-500">No deposits yet.</div>';
+}
 
 function createPlanCard(plan, loggedIn) {
   const isLowest = plan.id === plans[0].id;
@@ -410,7 +564,9 @@ function navigate(section) {
   document.getElementById("home-section").classList.toggle("hidden", section !== "home");
   document.getElementById("deposit-section").classList.toggle("hidden", section !== "deposit");
   document.getElementById("withdraw-section").classList.toggle("hidden", section !== "withdraw");
+  document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
   if (section === "withdraw") renderWithdrawInvestments();
+  if (section === "deposit") renderDepositHistory(latestInvestments);
 }
 
 async function ensureWalletExists() {
@@ -484,10 +640,12 @@ async function fetchInvestments() {
   if (!currentUser) return;
   const { data } = await supabaseClient.from("investments").select("*").eq("user_id", currentUser.id).order("start_timestamp", { ascending: false });
   const list = data || [];
+  latestInvestments = list;
   updateDashboardStats(list);
   renderInvestmentTimers(list);
   renderWithdrawInvestments(list);
   renderRecentTransactions(list);
+  renderDepositHistory(list);
 }
 
 function updateDashboardStats(investments = []) {
@@ -578,6 +736,10 @@ async function handleWithdraw(e) {
   document.getElementById("withdraw-form").reset();
 }
 
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#user-menu")) closeAllNavPopovers();
+});
+
 supabaseClient.auth.onAuthStateChange(async (_, session) => {
   currentUser = session?.user || null;
   document.getElementById("public-view").classList.toggle("hidden", !!currentUser);
@@ -590,12 +752,16 @@ supabaseClient.auth.onAuthStateChange(async (_, session) => {
     document.body.classList.toggle("mobile-dashboard", window.matchMedia("(max-width: 768px)").matches);
     document.getElementById("welcome-name").textContent = currentUser.email.split("@")[0];
     document.getElementById("mobile-welcome-name").textContent = currentUser.email.split("@")[0];
+    document.getElementById("profile-email").textContent = currentUser.email;
+    document.getElementById("profile-user-id").textContent = `User ID: ${currentUser.id}`;
     await ensureWalletExists();
     await loadWallet();
     await fetchInvestments();
     navigate("home");
   } else {
     document.body.classList.remove("mobile-dashboard");
+    closeAllNavPopovers();
+    closeLogoutModal();
     renderPlans();
     if (countdownTimer) clearInterval(countdownTimer);
   }
