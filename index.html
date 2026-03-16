@@ -347,9 +347,14 @@
         <button onclick="closeModal('deposit')">✕</button>
       </div>
       <div id="deposit-plan-summary" class="rounded-xl bg-white/50 p-3 text-sm"></div>
-      <div class="rounded-xl bg-white/50 p-3 text-sm space-y-1">
-        <div class="font-semibold">Pay to UPI: <span id="manual-upi-id">investhub@upi</span></div>
-        <div>Complete payment in your UPI app and submit the UTR below.</div>
+      <div class="rounded-xl bg-white/50 p-3 text-sm space-y-2">
+        <div class="font-semibold">UPI ID: <span id="manual-upi-id">yourupi@bank</span></div>
+        <div class="rounded-lg border border-white/40 bg-white/40 h-32 flex items-center justify-center text-slate-600 text-xs">QR Code (optional)</div>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>Send payment to the UPI ID above.</li>
+          <li>Enter your User ID in the payment note.</li>
+          <li>After payment, enter your UTR number below.</li>
+        </ol>
       </div>
       <form onsubmit="submitDepositRequest(event)" class="space-y-3">
         <input id="manual-deposit-amount" type="number" min="1" required placeholder="Amount" class="w-full px-3 py-2 rounded-xl border" />
@@ -524,8 +529,10 @@ async function submitDepositRequest(e) {
   const utr = document.getElementById("manual-deposit-utr").value.trim();
   const msg = document.getElementById("deposit-msg");
   msg.textContent = "";
-  if (!amount || amount <= 0) { msg.textContent = "Enter a valid amount."; return; }
+  if (!currentUser) { msg.textContent = "Please login to submit a deposit request."; return; }
+  if (!amount || amount <= 0) { msg.textContent = "Amount must be greater than 0."; return; }
   if (!utr) { msg.textContent = "Enter UTR number."; return; }
+  if (utr.length < 10) { msg.textContent = "UTR must be at least 10 characters."; return; }
 
   const { error } = await supabaseClient.from("deposit_requests").insert({
     user_id: currentUser.id,
@@ -544,8 +551,9 @@ async function submitDepositRequest(e) {
     reference_id: utr
   });
 
-  msg.textContent = "Deposit request submitted. It will be credited after manual verification.";
+  msg.innerHTML = "Deposit request submitted<br>Status: Pending Verification";
   document.getElementById("manual-deposit-utr").value = "";
+  document.getElementById("manual-deposit-amount").value = "";
   await fetchDepositRequests();
 }
 
@@ -577,6 +585,7 @@ function createPlanCard(plan, loggedIn) {
     `;
     document.getElementById("manual-deposit-amount").value = plan.amount;
     document.getElementById("manual-deposit-utr").value = "";
+  document.getElementById("manual-deposit-amount").value = "";
     document.getElementById("deposit-msg").textContent = "";
     openModal("deposit");
   };
