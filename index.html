@@ -209,6 +209,11 @@
             <div>2. Make payment via manual UPI and submit UTR for approval.</div>
             <div>3. Track live countdown and withdraw after maturity.</div>
           </div>
+        </section>
+
+        <div class="glass rounded-2xl p-4 md:p-6">
+          <h2 class="text-2xl font-bold">Home Dashboard</h2>
+          <p class="text-slate-600">Submit manual UPI deposit requests and track your investments.</p>
         </div>
         <div class="glass rounded-2xl p-5 text-sm text-slate-700">
           <h3 class="text-xl font-semibold mb-2">Referral Program</h3>
@@ -323,6 +328,74 @@
         <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
       </div>
     </footer>
+  </div>
+
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
+    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="auth-title" class="text-xl font-bold">Login</h3>
+        <button onclick="closeModal('auth')">✕</button>
+      </div>
+      <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-3">
+        <input id="auth-email" type="email" required placeholder="Email" class="w-full px-3 py-2 rounded-xl border" />
+        <input id="auth-password" type="password" required placeholder="Password" class="w-full px-3 py-2 rounded-xl border" />
+        <button id="auth-submit" class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium tap">Login</button>
+      </form>
+      <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm"></button>
+    </div>
+  </div>
+
+    <div id="plan-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="plan-name"></h3>
+      <p>Amount ₹<span id="plan-amount"></span></p>
+
+      <button id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Pay with UPI App</button>
+
+      <button id="show-qr-btn" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Scan QR Code</button>
+
+      <div id="qrBox" class="hidden" style="margin-top:15px;">
+        <img id="upiQR" width="220">
+        <p>Scan using any UPI app</p>
+      </div>
+
+      <button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+    </div>
+  </div>
+
+  <div id="payment-screen" class="payment-screen hidden">
+    <div class="payment-box">
+      <h2>Opening UPI...</h2>
+      <p>Please complete payment in your UPI app</p>
+    </div>
+  </div>
+
+  <div id="utr-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Submit Payment UTR</h3>
+      <p>Amount ₹<span id="utr-amount"></span></p>
+      <input id="utr-input" placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border mt-2" />
+      <button id="submit-utr-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Submit</button>
+      <button onclick="closeUTRModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+      <div id="utr-msg" class="text-sm mt-2"></div>
+    </div>
+  </div>
+
+<div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-sm glass rounded-2xl p-5 space-y-4">
+      <h3 class="text-lg font-semibold">Do you want to logout?</h3>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeLogoutModal()" class="px-4 py-2 rounded-xl border border-slate-300">Cancel</button>
+        <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-600 text-white">Logout</button>
+      </div>
+    </div>
+  </div>
+
+<script src="js/auth.js"></script>
+<script src="js/wallet.js"></script>
+<script src="js/deposit.js"></script>
+<script src="js/withdraw.js"></script>
+<script src="js/ui.js"></script>
   </div>
 
   <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
