@@ -6,7 +6,6 @@
   <title>Investment Platform</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
   <style>
     * { box-sizing: border-box; }
     body {
@@ -207,7 +206,7 @@
           <h3 class="text-xl font-semibold mb-3">How it Works</h3>
           <div class="grid sm:grid-cols-3 gap-3 text-sm text-slate-700">
             <div>1. Sign up/login and choose a plan.</div>
-            <div>2. Activate using secure Razorpay payment.</div>
+            <div>2. Make payment via manual UPI and submit UTR for approval.</div>
             <div>3. Track live countdown and withdraw after maturity.</div>
           </div>
         </div>
@@ -246,7 +245,7 @@
 
         <div class="glass rounded-2xl p-4 md:p-6">
           <h2 class="text-2xl font-bold">Home Dashboard</h2>
-          <p class="text-slate-600">Choose a plan and pay securely with Razorpay.</p>
+          <p class="text-slate-600">Submit manual UPI deposit requests and track your investments.</p>
         </div>
 
         <section id="home-section" class="space-y-4">
@@ -258,7 +257,7 @@
 
         <section id="deposit-section" class="hidden glass rounded-2xl p-5">
           <h3 class="text-xl font-semibold mb-2">Deposit</h3>
-          <p class="text-slate-600">Select any plan card and tap Deposit to proceed via Razorpay.</p>
+          <p class="text-slate-600">Select any plan card and submit a manual UPI deposit request with UTR.</p>
           <div class="mt-4 rounded-xl bg-white/45 p-3 text-sm border border-white/40">
             <div class="font-semibold">Total Deposited: <span id="deposit-total">₹0</span></div>
             <div id="deposit-history" class="mt-2 space-y-2"></div>
@@ -344,14 +343,19 @@
   <div id="deposit-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
     <div class="sheet-card w-full max-w-lg glass rounded-2xl p-5 space-y-4">
       <div class="flex items-center justify-between">
-        <h3 class="text-xl font-bold">Activate Investment</h3>
+        <h3 class="text-xl font-bold">Manual UPI Deposit Request</h3>
         <button onclick="closeModal('deposit')">✕</button>
       </div>
       <div id="deposit-plan-summary" class="rounded-xl bg-white/50 p-3 text-sm"></div>
-      <div>
-        <p class="font-medium mb-2">Payment Option</p>
-        <button onclick="payWithRazorpay()" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap">Razorpay (UPI / Cards / Wallets)</button>
+      <div class="rounded-xl bg-white/50 p-3 text-sm space-y-1">
+        <div class="font-semibold">Pay to UPI: <span id="manual-upi-id">investhub@upi</span></div>
+        <div>Complete payment in your UPI app and submit the UTR below.</div>
       </div>
+      <form onsubmit="submitDepositRequest(event)" class="space-y-3">
+        <input id="manual-deposit-amount" type="number" min="1" required placeholder="Amount" class="w-full px-3 py-2 rounded-xl border" />
+        <input id="manual-deposit-utr" type="text" required placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border" />
+        <button class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap">Submit Deposit Request</button>
+      </form>
       <div id="deposit-msg" class="text-sm"></div>
     </div>
   </div>
@@ -387,6 +391,7 @@ let visiblePrivatePlans = 4;
 let selectedPlan = null;
 let countdownTimer = null;
 let latestInvestments = [];
+let latestDepositRequests = [];
 
 function formatCurrency(amount) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(amount); }
 function toggleFooterSection(section) {
@@ -494,16 +499,54 @@ async function updateProfilePassword(e) {
   document.getElementById("settings-new-password").value = "";
 }
 
-function renderDepositHistory(investments = []) {
-  const total = investments.reduce((sum, inv) => sum + (inv.amount || 0), 0);
+function renderDepositHistory(requests = []) {
+  const total = requests.filter(r => r.status === "approved").reduce((sum, r) => sum + Number(r.amount || 0), 0);
   document.getElementById("deposit-total").textContent = formatCurrency(total);
   const box = document.getElementById("deposit-history");
-  box.innerHTML = investments.slice(0, 6).map(inv => `
+  box.innerHTML = requests.slice(0, 6).map(r => `
     <div class="flex items-center justify-between rounded-lg bg-white/50 border border-white/30 px-3 py-2">
-      <span>Plan #${inv.plan_id} • ${new Date(inv.start_timestamp).toLocaleDateString("en-IN")}</span>
-      <span class="font-semibold">${formatCurrency(inv.amount)}</span>
+      <span>${new Date(r.created_at).toLocaleDateString("en-IN")} • ${r.status}</span>
+      <span class="font-semibold">${formatCurrency(r.amount)}</span>
     </div>
-  `).join("") || '<div class="text-slate-500">No deposits yet.</div>';
+  `).join("") || '<div class="text-slate-500">No deposit requests yet.</div>';
+}
+
+async function fetchDepositRequests() {
+  if (!currentUser) return;
+  const { data } = await supabaseClient.from("deposit_requests").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
+  latestDepositRequests = data || [];
+  renderDepositHistory(latestDepositRequests);
+}
+
+async function submitDepositRequest(e) {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("manual-deposit-amount").value);
+  const utr = document.getElementById("manual-deposit-utr").value.trim();
+  const msg = document.getElementById("deposit-msg");
+  msg.textContent = "";
+  if (!amount || amount <= 0) { msg.textContent = "Enter a valid amount."; return; }
+  if (!utr) { msg.textContent = "Enter UTR number."; return; }
+
+  const { error } = await supabaseClient.from("deposit_requests").insert({
+    user_id: currentUser.id,
+    amount,
+    utr,
+    status: "pending"
+  });
+  if (error) { msg.textContent = error.message; return; }
+
+  await supabaseClient.from("transactions").insert({
+    user_id: currentUser.id,
+    type: "deposit",
+    amount,
+    status: "pending",
+    provider: "upi_manual",
+    reference_id: utr
+  });
+
+  msg.textContent = "Deposit request submitted. It will be credited after manual verification.";
+  document.getElementById("manual-deposit-utr").value = "";
+  await fetchDepositRequests();
 }
 
 function createPlanCard(plan, loggedIn) {
@@ -532,6 +575,8 @@ function createPlanCard(plan, loggedIn) {
       <div>Amount: ${formatCurrency(plan.amount)}</div>
       <div>Expected Total: ${formatCurrency(plan.totalReturn)}</div>
     `;
+    document.getElementById("manual-deposit-amount").value = plan.amount;
+    document.getElementById("manual-deposit-utr").value = "";
     document.getElementById("deposit-msg").textContent = "";
     openModal("deposit");
   };
@@ -566,7 +611,7 @@ function navigate(section) {
   document.getElementById("withdraw-section").classList.toggle("hidden", section !== "withdraw");
   document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
   if (section === "withdraw") renderWithdrawInvestments();
-  if (section === "deposit") renderDepositHistory(latestInvestments);
+  if (section === "deposit") renderDepositHistory(latestDepositRequests);
 }
 
 async function ensureWalletExists() {
@@ -582,60 +627,6 @@ async function loadWallet() {
   document.getElementById("wallet-balance-mobile").textContent = formatted;
 }
 
-async function payWithRazorpay() {
-  if (!selectedPlan || !currentUser) return;
-  const options = {
-    key: "rzp_test_1DP5mmOlF5G5ag",
-    amount: selectedPlan.amount * 100,
-    currency: "INR",
-    name: "InvestHub",
-    description: `${selectedPlan.name} plan activation`,
-    handler: async function (response) {
-      await confirmInvestment(response.razorpay_payment_id);
-    },
-    prefill: { email: currentUser.email },
-    theme: { color: "#4f46e5" },
-    modal: { ondismiss: () => { document.getElementById("deposit-msg").textContent = "Payment cancelled. Please retry."; } }
-  };
-  try {
-    const rzp = new Razorpay(options);
-    rzp.on("payment.failed", () => { document.getElementById("deposit-msg").textContent = "Payment failed. Please retry."; });
-    rzp.open();
-  } catch {
-    document.getElementById("deposit-msg").textContent = "Unable to open payment gateway.";
-  }
-}
-
-async function confirmInvestment(paymentId) {
-  const now = Date.now();
-  const end = now + selectedPlan.days * 24 * 60 * 60 * 1000;
-  const investment = {
-    user_id: currentUser.id,
-    plan_id: selectedPlan.id,
-    amount: selectedPlan.amount,
-    start_timestamp: new Date(now).toISOString(),
-    end_timestamp: new Date(end).toISOString(),
-    status: "active"
-  };
-
-  const { error } = await supabaseClient.from("investments").insert(investment);
-  if (error) {
-    document.getElementById("deposit-msg").textContent = error.message;
-    return;
-  }
-  await supabaseClient.from("transactions").insert({
-    user_id: currentUser.id,
-    type: "investment",
-    amount: selectedPlan.amount,
-    status: "success",
-    provider: "razorpay",
-    reference_id: paymentId
-  });
-  document.getElementById("deposit-msg").textContent = "Payment successful. Investment activated.";
-  closeModal("deposit");
-  fetchInvestments();
-}
-
 async function fetchInvestments() {
   if (!currentUser) return;
   const { data } = await supabaseClient.from("investments").select("*").eq("user_id", currentUser.id).order("start_timestamp", { ascending: false });
@@ -645,7 +636,6 @@ async function fetchInvestments() {
   renderInvestmentTimers(list);
   renderWithdrawInvestments(list);
   renderRecentTransactions(list);
-  renderDepositHistory(list);
 }
 
 function updateDashboardStats(investments = []) {
@@ -757,6 +747,7 @@ supabaseClient.auth.onAuthStateChange(async (_, session) => {
     await ensureWalletExists();
     await loadWallet();
     await fetchInvestments();
+    await fetchDepositRequests();
     navigate("home");
   } else {
     document.body.classList.remove("mobile-dashboard");
