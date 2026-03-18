@@ -1,3 +1,4 @@
+window.currentUser = null;
 const { createClient } = supabase;
 window.supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
 
@@ -82,6 +83,9 @@ window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
     await window.fetchInvestments();
     await window.fetchDepositRequests();
     window.navigate("home");
+    if (typeof attachPlanButtons === "function") {
+  attachPlanButtons();
+    }
   } else {
     document.body.classList.remove("mobile-dashboard");
     window.closeAllNavPopovers();
