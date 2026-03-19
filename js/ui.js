@@ -178,55 +178,13 @@ window.loadMorePlans = function loadMorePlans(type) {
   window.renderPlans();
 };
 
-window.navigate = function(section) {
-
-const sections = [
-  "home-section",
-  "deposit-section",
-  "withdraw-section",
-  "settings-section"
-];
-
-// 1. hide ALL sections first
-sections.forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.classList.add("hidden");
-});
-
-// 2. show only selected section
-const active = document.getElementById(section + "-section");
-if (active) active.classList.remove("hidden");
-
-// 3. run specific logic
-if (section === "withdraw" && typeof window.renderWithdrawInvestments === "function") {
-  window.renderWithdrawInvestments();
-}
-
-if (section === "deposit" && typeof window.renderDepositHistory === "function") {
-  window.renderDepositHistory(window.latestDepositRequests);
-}
-
-};
-
-window.fetchInvestments = async function fetchInvestments() {
-  if (!window.currentUser) return;
-  const { data } = await window.supabaseClient.from("investments").select("*").eq("user_id", window.currentUser.id).order("start_timestamp", { ascending: false });
-  const list = data || [];
-  window.latestInvestments = list;
-  window.updateDashboardStats(list);
-  window.renderInvestmentTimers(list);
-  window.renderWithdrawInvestments(list);
-  window.renderRecentTransactions(list);
-};
-
-window.updateDashboardStats = function updateDashboardStats(investments = []) {
-  const active = investments.filter(i => i.status === "active").length;
-  const earnings = investments.reduce((sum, i) => {
-    const plan = window.plans.find(p => p.id === i.plan_id);
-    return sum + Math.max(0, (plan?.totalReturn || i.amount) - i.amount);
-  }, 0);
-  document.getElementById("active-count").textContent = active;
-  document.getElementById("total-earnings").textContent = window.formatCurrency(earnings);
+window.navigate = function navigate(section) {
+  document.getElementById("homeSection").classList.toggle("hidden", section !== "home");
+  document.getElementById("depositSection").classList.toggle("hidden", section !== "deposit");
+  document.getElementById("withdrawSection").classList.toggle("hidden", section !== "withdraw");
+  document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
+  if (section === "withdraw") window.renderWithdrawInvestments();
+  if (section === "deposit") window.renderDepositHistory(window.latestDepositRequests);
 };
 
 window.renderRecentTransactions = function renderRecentTransactions(investments = []) {
