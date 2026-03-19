@@ -91,14 +91,17 @@ window.submitDepositRequest = async function submitDepositRequest(e) {
 };
 
 document.addEventListener("DOMContentLoaded", () => {
-  const amount = localStorage.getItem("pendingDepositAmount");
-  const time = localStorage.getItem("pendingDepositTime");
-  if (amount && time) {
-    const age = Date.now() - parseInt(time, 10);
-    if (age < 600000) window.openUTRModal(amount);
-  }
+
+  // ❌ DISABLED auto UTR popup
+  // const amount = localStorage.getItem("pendingDepositAmount");
+  // const time = localStorage.getItem("pendingDepositTime");
+  // if (amount && time) {
+  //   const age = Date.now() - parseInt(time, 10);
+  //   if (age < 600000) window.openUTRModal(amount);
+  // }
 
   const submitBtn = document.getElementById("submit-utr-btn");
   if (submitBtn) submitBtn.addEventListener("click", window.submitUTR);
+
   window.loadDepositHistory();
 });
