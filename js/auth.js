@@ -83,10 +83,10 @@ window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
     await window.fetchInvestments();
     await window.fetchDepositRequests();
     window.navigate("home");
-    if (typeof attachPlanButtons === "function") {
-  attachPlanButtons();
     }
   } else {
+  if (typeof attachPlanButtons === "function") {
+  attachPlanButtons();
     document.body.classList.remove("mobile-dashboard");
     window.closeAllNavPopovers();
     window.closeLogoutModal();
