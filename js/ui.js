@@ -178,13 +178,34 @@ window.loadMorePlans = function loadMorePlans(type) {
   window.renderPlans();
 };
 
-window.navigate = function navigate(section) {
-  document.getElementById("home-section").classList.toggle("hidden", section !== "home");
-  document.getElementById("deposit-section").classList.toggle("hidden", section !== "deposit");
-  document.getElementById("withdraw-section").classList.toggle("hidden", section !== "withdraw");
-  document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
-  if (section === "withdraw") window.renderWithdrawInvestments();
-  if (section === "deposit") window.renderDepositHistory(window.latestDepositRequests);
+window.navigate = function(section) {
+
+const sections = [
+  "home-section",
+  "deposit-section",
+  "withdraw-section",
+  "settings-section"
+];
+
+// 1. hide ALL sections first
+sections.forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.classList.add("hidden");
+});
+
+// 2. show only selected section
+const active = document.getElementById(section + "-section");
+if (active) active.classList.remove("hidden");
+
+// 3. run specific logic
+if (section === "withdraw" && typeof window.renderWithdrawInvestments === "function") {
+  window.renderWithdrawInvestments();
+}
+
+if (section === "deposit" && typeof window.renderDepositHistory === "function") {
+  window.renderDepositHistory(window.latestDepositRequests);
+}
+
 };
 
 window.fetchInvestments = async function fetchInvestments() {
