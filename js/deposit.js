@@ -1,24 +1,18 @@
-const UPI_ID = "razerpay@upi";
-
 window.renderDepositHistory = function renderDepositHistory(requests = []) {
   const total = requests
-    .filter((r) => r.status === "approved")
+    .filter(r => r.status === "approved")
     .reduce((sum, r) => sum + Number(r.amount || 0), 0);
-
-  const totalNode = document.getElementById("deposit-total");
-  if (totalNode && window.formatCurrency) totalNode.textContent = window.formatCurrency(total);
+  document.getElementById("deposit-total").textContent = window.formatCurrency(total);
 
   const list = document.getElementById("deposit-list");
   if (!list) return;
   list.innerHTML = "";
-
-  (requests || []).forEach((dep) => {
+  (requests || []).forEach(dep => {
     const li = document.createElement("li");
     li.className = "rounded-lg bg-white/50 border border-white/30 px-3 py-2 text-sm flex items-center justify-between";
     li.innerHTML = `<span>₹${dep.amount}</span><span class="capitalize">${dep.status}</span>`;
     list.appendChild(li);
   });
-
   if (!requests.length) {
     const li = document.createElement("li");
     li.className = "text-slate-500 text-sm";
@@ -28,7 +22,11 @@ window.renderDepositHistory = function renderDepositHistory(requests = []) {
 };
 
 window.loadDepositHistory = async function loadDepositHistory() {
-  if (!window.currentUser || !window.supabaseClient) return;
+  if (!window.currentUser) {
+    const list = document.getElementById("deposit-list");
+    if (list) list.innerHTML = "";
+    return;
+  }
 
   const { data, error } = await window.supabaseClient
     .from("deposit_requests")
@@ -43,51 +41,67 @@ window.loadDepositHistory = async function loadDepositHistory() {
 
 window.fetchDepositRequests = window.loadDepositHistory;
 
-window.openDepositPopup = function openDepositPopup(plan, amount) {
-  document.getElementById("modalPlanName").innerText = plan;
-  document.getElementById("depositStatusMsg").textContent = "";
-  document.getElementById("depositModal").dataset.amount = String(amount || "");
-  document.getElementById("depositModal").classList.remove("hidden");
+window.openUTRModal = function openUTRModal(amount) {
+  document.getElementById("utr-amount").textContent = amount;
+  document.getElementById("utr-input").value = "";
+  document.getElementById("utr-msg").textContent = "";
+  document.getElementById("utr-modal").classList.remove("hidden");
+  document.getElementById("payment-screen").classList.add("hidden");
 };
 
-window.closeDepositModal = function closeDepositModal() {
-  document.getElementById("depositModal").classList.add("hidden");
+window.closeUTRModal = function closeUTRModal() {
+  document.getElementById("utr-modal").classList.add("hidden");
 };
 
-window.payNow = function payNow() {
-  window.location.href = `upi://pay?pa=${UPI_ID}&pn=InvestHub&cu=INR`;
-};
+window.submitUTR = async function submitUTR() {
+  const utr = document.getElementById("utr-input").value.trim();
+  const amount = localStorage.getItem("pendingDepositAmount");
+  const msg = document.getElementById("utr-msg");
+  msg.textContent = "";
 
-window.showUTR = function showUTR() {
-  const utr = prompt("Enter UTR number");
-  if (!utr) return;
+  if (!utr) { msg.textContent = "Enter UTR number"; return; }
+  if (utr.length < 10) { msg.textContent = "UTR must be at least 10 characters"; return; }
+  if (!amount || Number(amount) <= 0) { msg.textContent = "Invalid amount"; return; }
 
-  localStorage.setItem("deposit_utr", utr.trim());
-  localStorage.setItem("deposit_status", "pending");
+  const { data: { user } } = await window.supabaseClient.auth.getUser();
+  if (!user) { msg.textContent = "Login required"; return; }
 
-  const msg = document.getElementById("depositStatusMsg");
-  if (msg) msg.textContent = "Payment submitted. Verifying...";
+  const { error } = await window.supabaseClient
+    .from("deposit_requests")
+    .insert({ user_id: user.id, amount: Number(amount), utr, status: "pending" });
 
-  const delayMs = 4000;
-  setTimeout(() => {
-    localStorage.setItem("deposit_status", "success");
-    if (msg) msg.textContent = "Deposit verified successfully.";
-  }, delayMs);
-};
-
-window.checkDepositStatus = function checkDepositStatus() {
-  if (localStorage.getItem("deposit_status") === "success") {
-    const msg = document.getElementById("depositStatusMsg");
-    if (msg) msg.textContent = "Deposit successful.";
+  if (error) {
+    msg.textContent = error.message;
+  } else {
+    msg.textContent = "Deposit request submitted. Status: Pending Verification";
+    localStorage.removeItem("pendingDepositAmount");
+    localStorage.removeItem("pendingDepositTime");
+    setTimeout(() => {
+      window.closeUTRModal();
+      window.loadDepositHistory();
+      window.loadWallet();
+    }, 700);
   }
 };
 
-window.initDepositFlow = function initDepositFlow() {
-  const upiBtn = document.getElementById("upiPayBtn");
-  if (upiBtn) upiBtn.onclick = window.payNow;
-
-  const paidBtn = document.getElementById("paidBtn");
-  if (paidBtn) paidBtn.onclick = window.showUTR;
-
-  window.checkDepositStatus();
+window.submitDepositRequest = async function submitDepositRequest(e) {
+  // legacy form hook support
+  if (e) e.preventDefault();
+  return window.submitUTR();
 };
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  // ❌ DISABLED auto UTR popup
+  // const amount = localStorage.getItem("pendingDepositAmount");
+  // const time = localStorage.getItem("pendingDepositTime");
+  // if (amount && time) {
+  //   const age = Date.now() - parseInt(time, 10);
+  //   if (age < 600000) window.openUTRModal(amount);
+  // }
+
+  const submitBtn = document.getElementById("submit-utr-btn");
+  if (submitBtn) submitBtn.addEventListener("click", window.submitUTR);
+
+  window.loadDepositHistory();
+});

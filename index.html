@@ -8,6 +8,165 @@
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <link rel="stylesheet" href="css/style.css" />
 
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #dbeafe 0%, #f8fafc 35%, #eef2ff 100%);
+      transition: background .3s ease-in-out;
+    }
+    body.mobile-dashboard {
+      background: linear-gradient(165deg, #0a1025 0%, #070b18 48%, #02040a 100%);
+      color: #e2e8f0;
+    }
+    .glass {
+      background: linear-gradient(135deg, rgba(255,255,255,.5), rgba(255,255,255,.25));
+      border: 1px solid rgba(255,255,255,.45);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 8px 32px rgba(15, 23, 42, 0.08);
+    }
+    .plan-card {
+      transition: transform .35s ease, box-shadow .35s ease, opacity .4s ease;
+      animation: fadeCard .5s ease both;
+      position: relative;
+      overflow: hidden;
+    }
+    .plan-card::after {
+      content: "";
+      position: absolute;
+      inset: -30%;
+      background: radial-gradient(circle at center, var(--aura, rgba(148,163,184,.2)) 0%, transparent 58%);
+      pointer-events: none;
+    }
+    .plan-card:hover { transform: translateY(-8px); box-shadow: 0 14px 36px rgba(15,23,42,.15); }
+    .tap:active { transform: scale(.98); }
+    .btn-premium {
+      transition: transform .3s ease, box-shadow .3s ease, filter .3s ease;
+    }
+    .btn-premium:hover { box-shadow: 0 8px 24px rgba(37, 99, 235, 0.25); }
+    .btn-premium:active { transform: scale(.97); }
+    .lowest { box-shadow: 0 0 0 1px rgba(59,130,246,.35), 0 0 32px rgba(59,130,246,.3); }
+    .highest { box-shadow: 0 0 0 1px rgba(245, 158, 11,.45), 0 0 36px rgba(245, 158, 11,.35); }
+    .highlight-btn { box-shadow: 0 0 24px rgba(59,130,246,.45); }
+    .highlight-btn-gold { box-shadow: 0 0 24px rgba(245, 158, 11,.45); }
+
+    .plans-mobile {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      padding-bottom: .25rem;
+    }
+    .plans-mobile > .plan-card { min-width: 85%; scroll-snap-align: center; }
+    .public-plan-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: .85rem;
+    }
+    .public-plan-grid > .plan-card { min-width: 0; }
+
+    .mobile-header-glass, .wallet-glass, .stat-glass, .recent-glass {
+      background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
+      border: 1px solid rgba(255,255,255,.1);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 14px 30px rgba(0, 0, 0, .25);
+      border-radius: 20px;
+    }
+    .wallet-glass {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(170deg, rgba(255,255,255,.11), rgba(255,255,255,.04));
+    }
+    .wallet-glass::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: -20px;
+      width: 180px;
+      height: 80px;
+      transform: translateX(-50%);
+      background: radial-gradient(circle, rgba(251, 191, 36, .35), transparent 70%);
+      pointer-events: none;
+    }
+    .fade-up { animation: fadeUp .3s ease-in-out both; }
+    .delay-1 { animation-delay: .1s; }
+    .particle-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(circle at 20% 25%, rgba(255,255,255,.11) 0 1px, transparent 2px), radial-gradient(circle at 80% 18%, rgba(255,255,255,.09) 0 1px, transparent 2px), radial-gradient(circle at 45% 70%, rgba(255,255,255,.08) 0 1px, transparent 2px);
+      pointer-events: none;
+    }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px);} to { opacity: 1; transform: translateY(0);} }
+
+    .fade-slide-enter { animation: slideFade .4s ease both; }
+    @keyframes slideFade { from { opacity: 0; transform: translateY(18px);} to { opacity: 1; transform: translateY(0);} }
+    @keyframes fadeCard { from { opacity: 0; transform: translateX(18px);} to { opacity: 1; transform: translateX(0);} }
+
+    @media (min-width: 768px) {
+      .plans-mobile { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); overflow: visible; }
+      .plans-mobile > .plan-card { min-width: 0; }
+      .public-plan-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+      @keyframes fadeCard { from { opacity: 0; } to { opacity: 1; } }
+    }
+
+    .footer-accordion-content {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transition: max-height .3s ease-in-out, opacity .3s ease-in-out;
+    }
+    .footer-accordion-content.open { max-height: 140px; opacity: 1; }
+    .nav-popover {
+      position: absolute;
+      top: calc(100% + 10px);
+      width: 220px;
+      background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(248,250,252,.86));
+      border: 1px solid rgba(148,163,184,.3);
+      box-shadow: 0 14px 28px rgba(15,23,42,.18);
+      backdrop-filter: blur(12px);
+      border-radius: 14px;
+      padding: .5rem;
+      z-index: 60;
+    }
+    .mobile-dashboard .nav-popover {
+      background: linear-gradient(145deg, rgba(15,23,42,.76), rgba(2,6,23,.7));
+      border-color: rgba(148,163,184,.3);
+      color: #e2e8f0;
+    }
+    .menu-item { width: 100%; text-align: left; padding: .6rem .8rem; border-radius: .7rem; transition: all .3s ease-in-out; }
+    .menu-item:hover { background: rgba(148,163,184,.15); }
+
+    @media (max-width: 767px) {
+      #dashboard-view { position: relative; }
+      .mobile-sheet { align-items: end; }
+      .mobile-sheet > .sheet-card {
+        width: 100%;
+        border-radius: 1.25rem 1.25rem 0 0;
+        max-height: 84vh;
+        overflow: auto;
+      .top-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+}
+
+.top-nav button {
+  background: transparent;
+  border: 1px solid rgba(148,163,184,0.3);
+  font-size: 13px;
+  color: #334155;
+}
+
+.top-nav button:hover {
+  background: rgba(148,163,184,0.15);
+}
+
+  </style>
 </head>
 <body class="h-full text-slate-800">
   <div class="min-h-full">
@@ -24,6 +183,39 @@
             <div onclick="showSection('depositSection')">Deposit</div>
             <div onclick="showSection('withdrawSection')">Withdraw</div>
             <div onclick="showSection('homeSection')">Home</div>
+      <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2">
+        <div class="font-bold text-xl self-center">InvestHub</div>
+        <div id="guest-actions" class="flex items-center gap-2">
+          <button onclick="openModal('auth','login')" class="px-4 py-2 rounded-xl text-blue-700 btn-premium">Login</button>
+          <button onclick="openModal('auth','signup')" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium">Sign Up</button>
+        </div>
+        <div id="user-menu" class="flex flex-col gap-2 w-full">
+          <div class="top-nav flex flex-wrap gap-2">
+  <button onclick="navigateFromMenu('deposit')" class="px-3 py-2 rounded-lg">Deposit</button>
+  <button onclick="navigateFromMenu('withdraw')" class="px-3 py-2 rounded-lg">Withdraw</button>
+  <button onclick="confirmLogout()" class="px-3 py-2 rounded-lg text-red-500">Logout</button>
+</div>
+          <div class="hidden sm:block text-sm glass rounded-xl px-3 py-2 w-fit">
+            <span id="welcome-name" class="font-semibold"></span>
+            <span class="mx-1">|</span>
+            <span id="wallet-balance" class="font-bold text-emerald-700">₹0</span>
+          </div>
+          <button onclick="toggleProfilePanel()" class="w-10 h-10 rounded-full border border-white/50 glass btn-premium tap flex items-center justify-center font-semibold">👤</button>
+          <div id="profile-popover" class="hidden nav-popover right-0 text-sm space-y-2">
+            <div class="px-2 py-1 border-b border-slate-300/35">
+              <div class="font-semibold">Profile</div>
+              <div id="profile-email" class="break-all text-xs"></div>
+              <div id="profile-user-id" class="text-[11px] text-slate-500"></div>
+            </div>
+            <form onsubmit="updateProfileEmail(event)" class="space-y-2 px-2">
+              <input id="profile-new-email" type="email" placeholder="Change email" class="w-full px-2 py-1 rounded-lg border" />
+              <button class="menu-item border border-slate-300">Update Email</button>
+            </form>
+            <form onsubmit="updateProfilePassword(event)" class="space-y-2 px-2 pb-1">
+              <input id="profile-new-password" type="password" placeholder="Set / Change password" class="w-full px-2 py-1 rounded-lg border" />
+              <button class="menu-item border border-slate-300">Update Password</button>
+            </form>
+            <div id="profile-msg" class="px-2 pb-1 text-xs"></div>
           </div>
         </div>
       </div>
@@ -36,6 +228,7 @@
           <p class="text-slate-600">Login to activate plans and track live returns.</p>
         </div>
         <div id="public-plan-list" class="public-plan-grid plans-grid"></div>
+        <div id="public-plan-list" class="public-plan-grid"></div>
         <div class="text-center">
           <button id="public-load-more" onclick="loadMorePlans('public')" class="px-5 py-2 rounded-xl glass btn-premium">Load More Plans</button>
         </div>
@@ -46,6 +239,11 @@
             <div>2. Make payment via manual UPI and submit UTR for approval.</div>
             <div>3. Track live countdown and withdraw after maturity.</div>
           </div>
+        </section>
+
+        <div class="glass rounded-2xl p-4 md:p-6">
+          <h2 class="text-2xl font-bold">Home Dashboard</h2>
+          <p class="text-slate-600">Submit manual UPI deposit requests and track your investments.</p>
         </div>
         <div class="glass rounded-2xl p-5 text-sm text-slate-700">
           <h3 class="text-xl font-semibold mb-2">Referral Program</h3>
@@ -54,6 +252,7 @@
       </section>
 
       <section id="dashboardSection" class="hidden space-y-6">
+      <section id="dashboard-view" class="hidden space-y-6">
         <section class="md:hidden particle-bg relative space-y-4">
           <div class="mobile-header-glass p-4 fade-up">
             <div class="flex items-center justify-between mb-3">
@@ -87,12 +286,15 @@
 
         <section id="homeSection" class="space-y-4">
           <div id="private-plan-list" class="plans-mobile plans-grid"></div>
+        <section id="home-section" class="space-y-4">
+          <div id="private-plan-list" class="plans-mobile"></div>
           <div class="text-center">
             <button id="private-load-more" onclick="loadMorePlans('private')" class="px-5 py-2 rounded-xl glass btn-premium">Load More Plans</button>
           </div>
         </section>
 
         <section id="depositSection" class="hidden glass rounded-2xl p-5">
+        <section id="deposit-section" class="hidden glass rounded-2xl p-5">
           <h3 class="text-xl font-semibold mb-2">Deposit</h3>
           <p class="text-slate-600">Select any plan card and submit a manual UPI deposit request with UTR.</p>
           <div class="mt-4 rounded-xl bg-white/45 p-3 text-sm border border-white/40">
@@ -105,6 +307,11 @@
         </section>
 
         <section id="withdrawSection" class="hidden glass rounded-2xl p-5 space-y-4">
+            <div id="deposit-history" class="mt-2 space-y-2"></div>
+          </div>
+        </section>
+
+        <section id="withdraw-section" class="hidden glass rounded-2xl p-5 space-y-4">
           <h3 class="text-xl font-semibold">Withdraw</h3>
           <form id="withdraw-form" class="grid md:grid-cols-3 gap-3" onsubmit="handleWithdraw(event)">
             <input id="withdraw-amount" type="number" min="1000" step="100" required placeholder="Amount ₹ (min 1000)" class="px-3 py-2 rounded-xl border" />
@@ -161,6 +368,49 @@
           <span>Disclaimer</span><span id="disclaimer-icon">+</span>
         </button>
         <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
+        </button>
+        <div id="terms-content" class="footer-accordion-content text-slate-700">No guaranteed returns: investment outcomes may vary and involve market risk. Users must review plan details before activation.</div>
+
+        <button onclick="toggleFooterSection('privacy')" class="w-full text-left py-2 font-semibold flex items-center justify-between">
+          <span>Privacy Policy</span><span id="privacy-icon">+</span>
+        </button>
+        <div id="privacy-content" class="footer-accordion-content text-slate-700">We collect only essential account and transaction data to provide wallet, investment, and withdrawal services securely.</div>
+
+        <button onclick="toggleFooterSection('disclaimer')" class="w-full text-left py-2 font-semibold flex items-center justify-between">
+          <span>Disclaimer</span><span id="disclaimer-icon">+</span>
+        </button>
+        <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
+      </div>
+    </footer>
+  </div>
+
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
+    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="auth-title" class="text-xl font-bold">Login</h3>
+        <button onclick="closeModal('auth')">✕</button>
+      </div>
+      <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-3">
+        <input id="auth-email" type="email" required placeholder="Email" class="w-full px-3 py-2 rounded-xl border" />
+        <input id="auth-password" type="password" required placeholder="Password" class="w-full px-3 py-2 rounded-xl border" />
+        <button id="auth-submit" class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium tap">Login</button>
+      </form>
+      <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm"></button>
+    </div>
+  </div>
+
+    <div id="plan-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3 id="plan-name"></h3>
+      <p>Amount ₹<span id="plan-amount"></span></p>
+
+      <button id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Pay with UPI App</button>
+
+      <button id="show-qr-btn" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Scan QR Code</button>
+
+      <div id="qrBox" class="hidden" style="margin-top:15px;">
+        <img id="upiQR" width="220">
+        <p>Scan using any UPI app</p>
       </div>
     </footer>
   </div>
@@ -195,6 +445,29 @@
   </div>
 
 <div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4">
+      <button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+    </div>
+  </div>
+
+  <div id="payment-screen" class="payment-screen hidden">
+    <div class="payment-box">
+      <h2>Opening UPI...</h2>
+      <p>Please complete payment in your UPI app</p>
+    </div>
+  </div>
+
+  <div id="utr-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Submit Payment UTR</h3>
+      <p>Amount ₹<span id="utr-amount"></span></p>
+      <input id="utr-input" placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border mt-2" />
+      <button id="submit-utr-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Submit</button>
+      <button onclick="closeUTRModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+      <div id="utr-msg" class="text-sm mt-2"></div>
+    </div>
+  </div>
+
+<div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4">
     <div class="w-full max-w-sm glass rounded-2xl p-5 space-y-4">
       <h3 class="text-lg font-semibold">Do you want to logout?</h3>
       <div class="flex justify-end gap-2">
@@ -209,5 +482,456 @@
 <script src="js/deposit.js"></script>
 <script src="js/withdraw.js"></script>
 <script src="js/ui.js"></script>
+  </div>
+
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
+    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="auth-title" class="text-xl font-bold">Login</h3>
+        <button onclick="closeModal('auth')">✕</button>
+      </div>
+      <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-3">
+        <input id="auth-email" type="email" required placeholder="Email" class="w-full px-3 py-2 rounded-xl border" />
+        <input id="auth-password" type="password" required placeholder="Password" class="w-full px-3 py-2 rounded-xl border" />
+        <button id="auth-submit" class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium tap">Login</button>
+      </form>
+      <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm"></button>
+    </div>
+  </div>
+
+  <div id="deposit-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
+    <div class="sheet-card w-full max-w-lg glass rounded-2xl p-5 space-y-4">
+      <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold">Manual UPI Deposit Request</h3>
+        <button onclick="closeModal('deposit')">✕</button>
+      </div>
+      <div id="deposit-plan-summary" class="rounded-xl bg-white/50 p-3 text-sm"></div>
+      <div class="rounded-xl bg-white/50 p-3 text-sm space-y-2">
+        <div class="font-semibold">UPI ID: <span id="manual-upi-id">266509545</span></div>
+        <div class="rounded-lg border border-white/40 bg-white/40 h-32 flex items-center justify-center text-slate-600 text-xs">QR Code (optional)</div>
+        <ol class="list-decimal pl-5 space-y-1">
+          <li>Send payment to the UPI ID above.</li>
+          <li>Enter your User ID in the payment note.</li>
+          <li>After payment, enter your UTR number below.</li>
+        </ol>
+      </div>
+      <form onsubmit="submitDepositRequest(event)" class="space-y-3">
+        <input id="manual-deposit-amount" type="number" min="1" required placeholder="Amount" class="w-full px-3 py-2 rounded-xl border" />
+        <input id="manual-deposit-utr" type="text" required placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border" />
+        <button class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap">Submit Deposit Request</button>
+      </form>
+      <div id="deposit-msg" class="text-sm"></div>
+    </div>
+  </div>
+
+  <div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4">
+    <div class="w-full max-w-sm glass rounded-2xl p-5 space-y-4">
+      <h3 class="text-lg font-semibold">Do you want to logout?</h3>
+      <div class="flex justify-end gap-2">
+        <button onclick="closeLogoutModal()" class="px-4 py-2 rounded-xl border border-slate-300">Cancel</button>
+        <button onclick="logout()" class="px-4 py-2 rounded-xl bg-rose-600 text-white">Logout</button>
+      </div>
+    </div>
+  </div>
+
+<script src="js/auth.js"></script>
+<script src="js/wallet.js"></script>
+<script src="js/deposit.js"></script>
+<script src="js/withdraw.js"></script>
+<script src="js/ui.js"></script>
+<script>
+const { createClient } = supabase;
+const supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
+
+const plans = [
+  { id: 1, name: "Plan A", amount: 6000, days: 35, dailyReturn: 180, totalReturn: 12000, aura: "rgba(125,211,252,.32)" },
+  { id: 2, name: "Plan B", amount: 16000, days: 45, dailyReturn: 420, totalReturn: 26000, aura: "rgba(196,181,253,.30)" },
+  { id: 3, name: "Plan C", amount: 22000, days: 60, dailyReturn: 560, totalReturn: 42000, aura: "rgba(244,114,182,.24)" },
+  { id: 4, name: "Plan D", amount: 30000, days: 75, dailyReturn: 800, totalReturn: 60000, aura: "rgba(110,231,183,.30)" },
+  { id: 5, name: "Plan E", amount: 38000, days: 95, dailyReturn: 1020, totalReturn: 76000, aura: "rgba(147,197,253,.28)" },
+  { id: 6, name: "Plan F", amount: 45000, days: 120, dailyReturn: 1250, totalReturn: 90000, aura: "rgba(253,186,116,.32)" },
+  { id: 7, name: "Plan G", amount: 52000, days: 150, dailyReturn: 1450, totalReturn: 104000, aura: "rgba(167,139,250,.28)" },
+  { id: 8, name: "Plan H", amount: 65000, days: 180, dailyReturn: 1800, totalReturn: 130000, aura: "rgba(250,204,21,.24)" }
+];
+let currentUser = null;
+let authMode = "login";
+let visiblePublicPlans = 6;
+let visiblePrivatePlans = 4;
+let selectedPlan = null;
+let countdownTimer = null;
+let latestInvestments = [];
+let latestDepositRequests = [];
+
+function formatCurrency(amount) { return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(amount); }
+function toggleFooterSection(section) {
+  ["terms", "privacy", "disclaimer"].forEach((key) => {
+    const content = document.getElementById(`${key}-content`);
+    const icon = document.getElementById(`${key}-icon`);
+    const isTarget = key === section;
+    const willOpen = isTarget && !content.classList.contains("open");
+    content.classList.toggle("open", willOpen);
+    icon.textContent = willOpen ? "−" : "+";
+  });
+}
+function formatTime(ms) {
+  if (ms <= 0) return "00 : 00 : 00 : 00";
+  const sec = Math.floor(ms / 1000);
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const s = sec % 60;
+  return `${String(d).padStart(2, "0")} : ${String(h).padStart(2, "0")} : ${String(m).padStart(2, "0")} : ${String(s).padStart(2, "0")}`;
+}
+
+function openModal(type, mode = "login") {
+  if (type === "auth") {
+    authMode = mode;
+    updateAuthModal();
+    document.getElementById("auth-modal").classList.remove("hidden");
+    document.getElementById("auth-modal").classList.add("flex");
+  }
+  if (type === "deposit") {
+    document.getElementById("deposit-modal").classList.remove("hidden");
+    document.getElementById("deposit-modal").classList.add("flex");
+  }
+}
+function closeModal(type) {
+  const el = document.getElementById(`${type}-modal`);
+  el.classList.add("hidden");
+  el.classList.remove("flex");
+}
+function toggleAuthMode() { authMode = authMode === "login" ? "signup" : "login"; updateAuthModal(); }
+function updateAuthModal() {
+  document.getElementById("auth-title").textContent = authMode === "login" ? "Login" : "Sign Up";
+  document.getElementById("auth-submit").textContent = authMode === "login" ? "Login" : "Create Account";
+  document.getElementById("auth-switch").textContent = authMode === "login" ? "Need an account? Sign Up" : "Already have an account? Login";
+}
+
+async function submitAuth(e) {
+  e.preventDefault();
+  const email = document.getElementById("auth-email").value;
+  const password = document.getElementById("auth-password").value;
+  const res = authMode === "login"
+    ? await supabaseClient.auth.signInWithPassword({ email, password })
+    : await supabaseClient.auth.signUp({ email, password });
+
+  if (res.error) return alert(res.error.message);
+  closeModal("auth");
+  navigate("home");
+}
+
+async function logout() { closeLogoutModal(); await supabaseClient.auth.signOut(); }
+
+function closeAllNavPopovers() {
+  document.getElementById("top-menu-popover").classList.add("hidden");
+  document.getElementById("profile-popover").classList.add("hidden");
+}
+function toggleTopMenu() {
+  const menu = document.getElementById("top-menu-popover");
+  const profile = document.getElementById("profile-popover");
+  const show = menu.classList.contains("hidden");
+  menu.classList.toggle("hidden", !show);
+  profile.classList.add("hidden");
+}
+function toggleProfilePanel() {
+  const profile = document.getElementById("profile-popover");
+  const menu = document.getElementById("top-menu-popover");
+  const show = profile.classList.contains("hidden");
+  profile.classList.toggle("hidden", !show);
+  menu.classList.add("hidden");
+}
+function navigateFromMenu(section) { navigate(section); closeAllNavPopovers(); }
+function confirmLogout() { closeAllNavPopovers(); document.getElementById("logout-modal").classList.remove("hidden"); document.getElementById("logout-modal").classList.add("flex"); }
+function closeLogoutModal() { document.getElementById("logout-modal").classList.add("hidden"); document.getElementById("logout-modal").classList.remove("flex"); }
+
+async function updateProfileEmail(e) {
+  e.preventDefault();
+  const email = document.getElementById("profile-new-email").value || document.getElementById("settings-new-email").value;
+  const targets = ["profile-msg", "settings-msg"];
+  if (!email) return targets.forEach(id => document.getElementById(id).textContent = "Please enter a new email.");
+  const { error } = await supabaseClient.auth.updateUser({ email });
+  const text = error ? error.message : "Email update requested. Check your inbox to confirm.";
+  targets.forEach(id => document.getElementById(id).textContent = text);
+  document.getElementById("profile-new-email").value = "";
+  document.getElementById("settings-new-email").value = "";
+}
+
+async function updateProfilePassword(e) {
+  e.preventDefault();
+  const password = document.getElementById("profile-new-password").value || document.getElementById("settings-new-password").value;
+  const targets = ["profile-msg", "settings-msg"];
+  if (!password) return targets.forEach(id => document.getElementById(id).textContent = "Please enter a password.");
+  const { error } = await supabaseClient.auth.updateUser({ password });
+  const text = error ? error.message : "Password updated successfully.";
+  targets.forEach(id => document.getElementById(id).textContent = text);
+  document.getElementById("profile-new-password").value = "";
+  document.getElementById("settings-new-password").value = "";
+}
+
+function renderDepositHistory(requests = []) {
+  const total = requests.filter(r => r.status === "approved").reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  document.getElementById("deposit-total").textContent = formatCurrency(total);
+  const box = document.getElementById("deposit-history");
+  box.innerHTML = requests.slice(0, 6).map(r => `
+    <div class="flex items-center justify-between rounded-lg bg-white/50 border border-white/30 px-3 py-2">
+      <span>${new Date(r.created_at).toLocaleDateString("en-IN")} • ${r.status}</span>
+      <span class="font-semibold">${formatCurrency(r.amount)}</span>
+    </div>
+  `).join("") || '<div class="text-slate-500">No deposit requests yet.</div>';
+}
+
+async function fetchDepositRequests() {
+  if (!currentUser) return;
+  const { data } = await supabaseClient.from("deposit_requests").select("*").eq("user_id", currentUser.id).order("created_at", { ascending: false });
+  latestDepositRequests = data || [];
+  renderDepositHistory(latestDepositRequests);
+}
+
+async function submitDepositRequest(e) {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("manual-deposit-amount").value);
+  const utr = document.getElementById("manual-deposit-utr").value.trim();
+  const msg = document.getElementById("deposit-msg");
+  msg.textContent = "";
+  if (!currentUser) { msg.textContent = "Please login to submit a deposit request."; return; }
+  if (!amount || amount <= 0) { msg.textContent = "Amount must be greater than 0."; return; }
+  if (!utr) { msg.textContent = "Enter UTR number."; return; }
+  if (utr.length < 10) { msg.textContent = "UTR must be at least 10 characters."; return; }
+
+  const { error } = await supabaseClient.from("deposit_requests").insert({
+    user_id: currentUser.id,
+    amount,
+    utr,
+    status: "pending"
+  });
+  if (error) { msg.textContent = error.message; return; }
+
+  await supabaseClient.from("transactions").insert({
+    user_id: currentUser.id,
+    type: "deposit",
+    amount,
+    status: "pending",
+    provider: "upi_manual",
+    reference_id: utr
+  });
+
+  msg.innerHTML = "Deposit request submitted<br>Status: Pending Verification";
+  document.getElementById("manual-deposit-utr").value = "";
+  document.getElementById("manual-deposit-amount").value = "";
+  await fetchDepositRequests();
+}
+
+function createPlanCard(plan, loggedIn) {
+  const isLowest = plan.id === plans[0].id;
+  const isHighest = plan.id === plans[plans.length - 1].id;
+  const card = document.createElement("div");
+  card.className = `plan-card glass rounded-2xl p-4 tap ${isLowest ? "lowest" : ""} ${isHighest ? "highest" : ""}`;
+  card.style.setProperty("--aura", plan.aura);
+  card.innerHTML = `
+    <h4 class="text-lg font-bold">${plan.name}</h4>
+    <p class="text-sm text-slate-600 mt-1">${plan.days} Days Cycle</p>
+    <p class="text-sm text-slate-600">Return: ~${Math.round((plan.totalReturn / plan.amount) * 100)}%</p>
+    <div class="mt-3 space-y-1 text-sm">
+      <p>Daily Return: <span class="font-semibold">${formatCurrency(plan.dailyReturn)}</span></p>
+      <p>Total Return: <span class="font-semibold">${formatCurrency(plan.totalReturn)}</span></p>
+      <p>Plan Amount: <span class="font-semibold">${formatCurrency(plan.amount)}</span></p>
+    </div>
+    <button class="mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium">${loggedIn ? "Deposit" : "Login to Activate"}</button>
+  `;
+  card.querySelector("button").onclick = () => {
+    if (!loggedIn) return openModal("auth", "login");
+    selectedPlan = plan;
+    document.getElementById("deposit-plan-summary").innerHTML = `
+      <div><b>${plan.name}</b> Plan</div>
+      <div>Duration: ${plan.days} days</div>
+      <div>Amount: ${formatCurrency(plan.amount)}</div>
+      <div>Expected Total: ${formatCurrency(plan.totalReturn)}</div>
+    `;
+    document.getElementById("manual-deposit-amount").value = plan.amount;
+    document.getElementById("manual-deposit-utr").value = "";
+  document.getElementById("manual-deposit-amount").value = "";
+    document.getElementById("deposit-msg").textContent = "";
+    openModal("deposit");
+  };
+  return card;
+}
+
+function renderPlans() {
+  const publicList = document.getElementById("public-plan-list");
+  publicList.innerHTML = "";
+  plans.slice(0, visiblePublicPlans).forEach(p => publicList.appendChild(createPlanCard(p, false)));
+  document.getElementById("public-load-more").classList.toggle("hidden", visiblePublicPlans >= plans.length);
+
+  const privateList = document.getElementById("private-plan-list");
+  privateList.innerHTML = "";
+  plans.slice(0, visiblePrivatePlans).forEach((p) => {
+    const card = createPlanCard(p, true);
+    card.classList.add("fade-slide-enter");
+    privateList.appendChild(card);
+  });
+  document.getElementById("private-load-more").classList.toggle("hidden", visiblePrivatePlans >= plans.length);
+}
+
+function loadMorePlans(type) {
+  if (type === "public") visiblePublicPlans = Math.min(plans.length, visiblePublicPlans + 3);
+  if (type === "private") visiblePrivatePlans = Math.min(plans.length, visiblePrivatePlans + 3);
+  renderPlans();
+}
+
+function navigate(section) {
+  document.getElementById("home-section").classList.toggle("hidden", section !== "home");
+  document.getElementById("deposit-section").classList.toggle("hidden", section !== "deposit");
+  document.getElementById("withdraw-section").classList.toggle("hidden", section !== "withdraw");
+  document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
+  if (section === "withdraw") renderWithdrawInvestments();
+  if (section === "deposit") renderDepositHistory(latestDepositRequests);
+}
+
+async function ensureWalletExists() {
+  const { data } = await supabaseClient.from("wallet").select("id").eq("user_id", currentUser.id).maybeSingle();
+  if (!data) await supabaseClient.from("wallet").insert({ user_id: currentUser.id, balance: 0 });
+}
+
+async function loadWallet() {
+  if (!currentUser) return;
+  const { data } = await supabaseClient.from("wallet").select("balance").eq("user_id", currentUser.id).single();
+  const formatted = formatCurrency(data?.balance || 0);
+  document.getElementById("wallet-balance").textContent = formatted;
+  document.getElementById("wallet-balance-mobile").textContent = formatted;
+}
+
+async function fetchInvestments() {
+  if (!currentUser) return;
+  const { data } = await supabaseClient.from("investments").select("*").eq("user_id", currentUser.id).order("start_timestamp", { ascending: false });
+  const list = data || [];
+  latestInvestments = list;
+  updateDashboardStats(list);
+  renderInvestmentTimers(list);
+  renderWithdrawInvestments(list);
+  renderRecentTransactions(list);
+}
+
+function updateDashboardStats(investments = []) {
+  const active = investments.filter(i => i.status === "active").length;
+  const earnings = investments.reduce((sum, i) => {
+    const plan = plans.find(p => p.id === i.plan_id);
+    return sum + Math.max(0, (plan?.totalReturn || i.amount) - i.amount);
+  }, 0);
+  document.getElementById("active-count").textContent = active;
+  document.getElementById("total-earnings").textContent = formatCurrency(earnings);
+}
+
+function renderRecentTransactions(investments = []) {
+  const box = document.getElementById("recent-transactions");
+  box.innerHTML = investments.slice(0, 4).map(i => `
+    <div class="flex items-center justify-between border-b border-white/15 pb-2">
+      <span>Plan #${i.plan_id} Activated</span>
+      <span>${formatCurrency(i.amount)}</span>
+    </div>`).join("") || '<div class="text-slate-400">No recent transactions.</div>';
+}
+
+function renderInvestmentTimers(investments = []) {
+  const container = document.getElementById("active-investments");
+  container.innerHTML = "";
+  if (countdownTimer) clearInterval(countdownTimer);
+
+  if (!investments.length) {
+    container.innerHTML = '<div class="text-slate-500">No investments yet.</div>';
+    return;
+  }
+
+  const draw = async () => {
+    const now = Date.now();
+    container.innerHTML = "";
+    for (const inv of investments) {
+      const endMs = new Date(inv.end_timestamp).getTime();
+      const left = endMs - now;
+      if (left <= 0 && inv.status !== "completed") {
+        await supabaseClient.from("investments").update({ status: "completed" }).eq("id", inv.id);
+        inv.status = "completed";
+      }
+      const canWithdrawAt = endMs + 86400000;
+      const eligible = now >= canWithdrawAt;
+      container.innerHTML += `<div class="rounded-xl border border-white/40 bg-white/40 p-3">
+        <div class="flex flex-wrap justify-between gap-2">
+          <div><b>Plan #${inv.plan_id}</b> • ${formatCurrency(inv.amount)}</div>
+          <div class="text-sm ${inv.status === "completed" ? "text-emerald-700" : "text-blue-700"}">${inv.status === "completed" ? "Completed" : "Active"}</div>
+        </div>
+        <div class="text-sm mt-1">Timer: ${inv.status === "completed" ? "Completed" : formatTime(left)}</div>
+        <div class="text-xs text-slate-600 mt-1">Withdraw ${eligible ? "enabled" : "available 1 day after completion"}</div>
+      </div>`;
+    }
+  };
+  draw();
+  countdownTimer = setInterval(draw, 1000);
+}
+
+async function renderWithdrawInvestments(prefetched) {
+  const { data } = prefetched ? { data: prefetched } : await supabaseClient.from("investments").select("*").eq("user_id", currentUser.id).order("start_timestamp", { ascending: false });
+  const list = data || [];
+  const box = document.getElementById("withdraw-investments");
+  const now = Date.now();
+  box.innerHTML = list.map(inv => {
+    const canWithdraw = now >= (new Date(inv.end_timestamp).getTime() + 86400000);
+    return `<div class="rounded-xl bg-white/50 p-3 border border-white/40 text-sm flex justify-between gap-2">
+      <span>Plan #${inv.plan_id} • ${inv.status}</span>
+      <span class="${canWithdraw ? "text-emerald-700" : "text-slate-500"}">${canWithdraw ? "Eligible" : "Locked"}</span>
+    </div>`;
+  }).join("") || '<div class="text-slate-500">No investments found.</div>';
+}
+
+async function handleWithdraw(e) {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById("withdraw-amount").value);
+  const upi = document.getElementById("withdraw-upi").value;
+  const msg = document.getElementById("withdraw-msg");
+  msg.textContent = "";
+  if (!amount || amount < 1000) { msg.textContent = "Minimum withdrawal ₹1000"; return; }
+
+  const { data: wallet } = await supabaseClient.from("wallet").select("balance").eq("user_id", currentUser.id).single();
+  if (!wallet || wallet.balance < amount) { msg.textContent = "Insufficient balance"; return; }
+
+  const { error } = await supabaseClient.from("withdrawals").insert({ user_id: currentUser.id, amount, upi_id: upi, status: "pending" });
+  if (error) { msg.textContent = error.message; return; }
+
+  await supabaseClient.from("transactions").insert({ user_id: currentUser.id, type: "withdrawal", amount, status: "pending", provider: "upi" });
+  msg.textContent = "Withdrawal request submitted. Awaiting admin approval.";
+  document.getElementById("withdraw-form").reset();
+}
+
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#user-menu")) closeAllNavPopovers();
+});
+
+supabaseClient.auth.onAuthStateChange(async (_, session) => {
+  currentUser = session?.user || null;
+  document.getElementById("public-view").classList.toggle("hidden", !!currentUser);
+  document.getElementById("dashboard-view").classList.toggle("hidden", !currentUser);
+  document.getElementById("guest-actions").classList.toggle("hidden", !!currentUser);
+  document.getElementById("user-menu").classList.toggle("hidden", !currentUser);
+  document.getElementById("user-menu").classList.toggle("flex", !!currentUser);
+
+  if (currentUser) {
+    document.body.classList.toggle("mobile-dashboard", window.matchMedia("(max-width: 768px)").matches);
+    document.getElementById("welcome-name").textContent = currentUser.email.split("@")[0];
+    document.getElementById("mobile-welcome-name").textContent = currentUser.email.split("@")[0];
+    document.getElementById("profile-email").textContent = currentUser.email;
+    document.getElementById("profile-user-id").textContent = `User ID: ${currentUser.id}`;
+    await ensureWalletExists();
+    await loadWallet();
+    await fetchInvestments();
+    await fetchDepositRequests();
+    navigate("home");
+  } else {
+    document.body.classList.remove("mobile-dashboard");
+    closeAllNavPopovers();
+    closeLogoutModal();
+    renderPlans();
+    if (countdownTimer) clearInterval(countdownTimer);
+  }
+});
+
+renderPlans();
+</script>
 </body>
 </html>
