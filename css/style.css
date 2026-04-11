@@ -1,3 +1,4 @@
+    * { box-sizing: border-box; }
 .hidden{
 display:none !important;
 }
@@ -207,4 +208,45 @@ grid-template-columns:repeat(2,1fr);
   border-radius:10px;
   background:white;
   padding:10px;
+}
+
+.menu{
+position:absolute;
+top:15px;
+right:15px;
+z-index:1000;
+}
+
+.menu-icon{
+background:#f1f5f9;
+padding:10px 14px;
+border-radius:12px;
+font-size:18px;
+cursor:pointer;
+box-shadow:0 5px 20px rgba(0,0,0,0.1);
+}
+
+.dropdown{
+position:absolute;
+right:0;
+margin-top:10px;
+background:white;
+border-radius:12px;
+box-shadow:0 10px 30px rgba(0,0,0,0.15);
+overflow:hidden;
+min-width:140px;
+}
+
+.dropdown div{
+padding:12px;
+cursor:pointer;
+border-bottom:1px solid #eee;
+}
+
+.dropdown div:hover{
+background:#f8fafc;
+}
+
+.hidden{
+display:none;
 }
