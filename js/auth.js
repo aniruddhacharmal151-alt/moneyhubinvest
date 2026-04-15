@@ -17,9 +17,16 @@ window.toggleAuthMode = function toggleAuthMode() {
 };
 
 window.updateAuthModal = function updateAuthModal() {
-  document.getElementById("auth-title").textContent = window.authMode === "login" ? "Login" : "Sign Up";
-  document.getElementById("auth-submit").textContent = window.authMode === "login" ? "Login" : "Create Account";
-  document.getElementById("auth-switch").textContent = window.authMode === "login" ? "Need an account? Sign Up" : "Already have an account? Login";
+  const title = document.getElementById("auth-title");
+  const button = document.getElementById("auth-submit");
+
+  if (window.authMode === "login") {
+    title.textContent = "Login";
+    button.textContent = "Login";
+  } else {
+    title.textContent = "Sign Up";
+    button.textContent = "Sign Up";
+  }
 };
 
 window.submitAuth = async function submitAuth(e) {
