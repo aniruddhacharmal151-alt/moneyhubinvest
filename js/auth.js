@@ -24,32 +24,43 @@ window.updateAuthModal = function updateAuthModal() {
 
 window.submitAuth = async function submitAuth(e) {
   e.preventDefault();
+
   const email = document.getElementById("auth-email").value;
   const password = document.getElementById("auth-password").value;
-  const res = window.authMode === "login"
-    ? await window.supabaseClient.auth.signInWithPassword({ email, password })
-    : await window.supabaseClient.auth.signUp({ email, password });
 
-  if (res.error) return alert(res.error.message);
-  window.closeModal("auth");
-  window.navigate("home");
-};
+  let result;
 
-window.logout = async function logout() {
-  window.closeLogoutModal();
-  await window.supabaseClient.auth.signOut();
+  if (window.authMode === "login") {
+    result = await window.supabaseClient.auth.signInWithPassword({
+      email,
+      password
+    });
+  } else {
+    result = await window.supabaseClient.auth.signUp({
+      email,
+      password
+    });
+  }
+
+  if (result.error) {
+    alert(result.error.message);
+  } else {
+    alert("Success!");
+    document.getElementById("auth-modal").classList.add("hidden");
+  }
 };
 
 window.updateProfileEmail = async function updateProfileEmail(e) {
   e.preventDefault();
-  const email = document.getElementById("profile-new-email").value || document.getElementById("settings-new-email").value;
-  const targets = ["profile-msg", "settings-msg"];
-  if (!email) return targets.forEach(id => document.getElementById(id).textContent = "Please enter a new email.");
-  const { error } = await window.supabaseClient.auth.updateUser({ email });
-  const text = error ? error.message : "Email update requested. Check your inbox to confirm.";
-  targets.forEach(id => document.getElementById(id).textContent = text);
-  document.getElementById("profile-new-email").value = "";
-  document.getElementById("settings-new-email").value = "";
+
+  const email = document.getElementById("settings-new-email").value;
+
+  const { error } = await window.supabaseClient.auth.updateUser({
+    email: email
+  });
+
+  document.getElementById("settings-msg").textContent =
+    error ? error.message : "Email updated!";
 };
 
 window.updateProfilePassword = async function updateProfilePassword(e) {
