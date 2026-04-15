@@ -238,3 +238,13 @@ document.addEventListener("click", (event) => {
 });
 
 window.renderPlans();
+
+let selectedAmount = 0;
+
+function payNow() {
+  const upiID = "Razerpay@upi"; // 🔴 replace with your UPI
+
+  const url = `upi://pay?pa=${upiID}&pn=InvestHub&am=${selectedAmount}&cu=INR`;
+
+  window.location.href = url;
+}
