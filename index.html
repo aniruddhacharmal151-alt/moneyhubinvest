@@ -641,19 +641,9 @@ function createPlanCard(plan, loggedIn) {
   `;
   card.querySelector("button").onclick = () => {
     if (!loggedIn) return openModal("auth", "login");
-    selectedPlan = plan;
-    document.getElementById("deposit-plan-summary").innerHTML = `
-      <div><b>${plan.name}</b> Plan</div>
-      <div>Duration: ${plan.days} days</div>
-      <div>Amount: ${formatCurrency(plan.amount)}</div>
-      <div>Expected Total: ${formatCurrency(plan.totalReturn)}</div>
-    `;
-    document.getElementById("manual-deposit-amount").value = plan.amount;
-    document.getElementById("manual-deposit-utr").value = "";
-  document.getElementById("manual-deposit-amount").value = "";
-    document.getElementById("deposit-msg").textContent = "";
-    openModal("deposit");
+    openPlanModal(plan.name, plan.amount);
   };
+
   return card;
 }
 
