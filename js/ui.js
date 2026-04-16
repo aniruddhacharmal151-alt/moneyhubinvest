@@ -248,3 +248,22 @@ function payNow() {
 
   window.location.href = url;
 }
+
+let selectedAmount = 0;
+
+function openPlanModal(name, amount) {
+  document.getElementById("plan-name").innerText = name;
+  document.getElementById("plan-amount").innerText = amount;
+
+  selectedAmount = amount;
+
+  document.getElementById("plan-modal").classList.remove("hidden");
+}
+
+function payNow() {
+  const upiID = "yourupi@upi"; // 🔴 replace with your real UPI
+
+  const url = `upi://pay?pa=${upiID}&pn=InvestHub&am=${selectedAmount}&cu=INR`;
+
+  window.location.href = url;
+}
