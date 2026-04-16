@@ -1,8 +1,10 @@
+const UPI_ID = "razerpay@upi";
+
 window.plans = [
-  { id: 1, name: "Plan A", amount: 6000, days: 35, dailyReturn: 180, totalReturn: 12000, aura: "rgba(125,211,252,.32)" },
-  { id: 2, name: "Plan B", amount: 16000, days: 45, dailyReturn: 420, totalReturn: 26000, aura: "rgba(196,181,253,.30)" },
-  { id: 3, name: "Plan C", amount: 22000, days: 60, dailyReturn: 560, totalReturn: 42000, aura: "rgba(244,114,182,.24)" },
-  { id: 4, name: "Plan D", amount: 30000, days: 75, dailyReturn: 800, totalReturn: 60000, aura: "rgba(110,231,183,.30)" },
+  { id: 1, name: "Plan A", amount: 6000, days: 55, dailyReturn: 182, totalReturn: 10000, aura: "rgba(125,211,252,.32)" },
+  { id: 2, name: "Plan B", amount: 16000, days: 75, dailyReturn: 280, totalReturn: 21000, aura: "rgba(196,181,253,.30)" },
+  { id: 3, name: "Plan C", amount: 22000, days: 137, dailyReturn: 292, totalReturn: 40000, aura: "rgba(244,114,182,.24)" },
+  { id: 4, name: "Plan D", amount: 30000, days: 170, dailyReturn: 300, totalReturn: 51000, aura: "rgba(110,231,183,.30)" },
   { id: 5, name: "Plan E", amount: 38000, days: 95, dailyReturn: 1020, totalReturn: 76000, aura: "rgba(147,197,253,.28)" },
   { id: 6, name: "Plan F", amount: 45000, days: 120, dailyReturn: 1250, totalReturn: 90000, aura: "rgba(253,186,116,.32)" },
   { id: 7, name: "Plan G", amount: 52000, days: 150, dailyReturn: 1450, totalReturn: 104000, aura: "rgba(167,139,250,.28)" },
@@ -34,40 +36,46 @@ window.formatTime = function formatTime(ms) {
   return `${String(d).padStart(2, "0")} : ${String(h).padStart(2, "0")} : ${String(m).padStart(2, "0")} : ${String(s).padStart(2, "0")}`;
 };
 
-let selectedAmount = 0;
+
+window.openUPIPayment = function openUPIPayment(amount) {
+  const upiLink = `upi://pay?pa=${UPI_ID}&pn=InvestHub&am=${amount}&cu=INR`;
+  localStorage.setItem("pendingDepositAmount", String(amount));
+  localStorage.setItem("pendingDepositTime", String(Date.now()));
+  document.getElementById("payment-screen").classList.remove("hidden");
+  setTimeout(() => {
+    window.location.href = upiLink;
+  }, 1200);
+};
+
+window.generateQR = function generateQR(amount) {
+  const upi = `upi://pay?pa=${UPI_ID}&pn=InvestHub&am=${amount}&cu=INR`;
+  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upi)}`;
+  document.getElementById("upiQR").src = qrURL;
+  document.getElementById("qrBox").classList.remove("hidden");
+};
 
 window.openPlanModal = function openPlanModal(name, amount) {
-  document.getElementById("plan-name").innerText = name;
-  document.getElementById("plan-amount").innerText = amount;
-  selectedAmount = Number(amount || 0);
+  document.getElementById("plan-name").textContent = name;
+  document.getElementById("plan-amount").textContent = amount;
+
+  const depositBtn = document.getElementById("deposit-now-btn");
+  const qrBtn = document.getElementById("show-qr-btn");
+
+  depositBtn.onclick = () => {
+    window.openUPIPayment(amount);
+  };
+
+  qrBtn.onclick = () => {
+    window.generateQR(amount);
+  };
+
+  window.generateQR(amount);
   document.getElementById("plan-modal").classList.remove("hidden");
 };
 
 window.closePlanModal = function closePlanModal() {
   document.getElementById("plan-modal").classList.add("hidden");
-};
-
-window.payNow = function payNow() {
-  const upiID = "yourupi@upi";
-  const url = `upi://pay?pa=${upiID}&pn=InvestHub&am=${selectedAmount}&cu=INR`;
-  window.location.href = url;
-};
-
-window.attachPlanButtons = function attachPlanButtons() {
-  // Handlers are assigned in createPlanCard to preserve auth behavior.
-};
-
-
-window.toggleMenu = function toggleMenu() {
-  document.getElementById("dropdownMenu")?.classList.toggle("hidden");
-};
-
-window.showSection = function showSection(sectionId) {
-  ["homeSection", "withdrawSection"].forEach((id) => {
-    document.getElementById(id)?.classList.add("hidden");
-  });
-  document.getElementById(sectionId)?.classList.remove("hidden");
-  document.getElementById("dropdownMenu")?.classList.add("hidden");
+  document.getElementById("qrBox").classList.add("hidden");
 };
 
 window.openModal = function openModal(type, mode = "login") {
@@ -139,15 +147,12 @@ window.createPlanCard = function createPlanCard(plan, loggedIn) {
     </div>
     <button class="plan-btn mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium" data-plan="${plan.name}" data-amount="${plan.amount}">${loggedIn ? "Deposit" : "Login to Activate"}</button>
   `;
-
+  
   card.querySelector("button").onclick = () => {
-    if (!loggedIn) {
-      window.openModal("auth", "login");
-      return;
-    }
+    if (!loggedIn) return window.openModal("auth", "login");
+    window.selectedPlan = plan;
     window.openPlanModal(plan.name, plan.amount);
   };
-
   return card;
 };
 
@@ -249,3 +254,30 @@ window.renderInvestmentTimers = function renderInvestmentTimers(investments = []
 };
 
 window.renderPlans();
+
+// close menu when clicking outside
+document.addEventListener("click", (event) => {
+  if (!event.target.closest("#user-menu")) window.closeAllNavPopovers();
+});
+
+// store selected amount
+let selectedAmount = 0;
+
+// open plan popup
+function openPlanModal(name, amount) {
+  document.getElementById("plan-name").innerText = name;
+  document.getElementById("plan-amount").innerText = amount;
+
+  selectedAmount = amount;
+
+  document.getElementById("plan-modal").classList.remove("hidden");
+}
+
+// UPI payment
+function payNow() {
+  const upiID = "Razerpay@upi"; // 🔴 PUT YOUR REAL UPI HERE
+
+  const url = `upi://pay?pa=${upiID}&pn=InvestHub&am=${selectedAmount}&cu=INR`;
+
+  window.location.href = url;
+}

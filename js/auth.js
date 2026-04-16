@@ -1,3 +1,4 @@
+window.currentUser = null;
 const { createClient } = supabase;
 window.supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
 
@@ -8,6 +9,7 @@ window.visiblePrivatePlans = 4;
 window.selectedPlan = null;
 window.countdownTimer = null;
 window.latestInvestments = [];
+window.latestDepositRequests = [];
 
 window.toggleAuthMode = function toggleAuthMode() {
   window.authMode = window.authMode === "login" ? "signup" : "login";

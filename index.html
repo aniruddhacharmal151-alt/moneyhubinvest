@@ -25,7 +25,6 @@
             <div onclick="showSection('homeSection')">Home</div>
           </div>
         </div>
-      </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
@@ -45,6 +44,11 @@
             <div>2. Review the selected plan details in the payment modal.</div>
             <div>3. Track live countdown and withdraw after maturity.</div>
           </div>
+        </section>
+
+        <div class="glass rounded-2xl p-4 md:p-6">
+          <h2 class="text-2xl font-bold">Home Dashboard</h2>
+          <p class="text-slate-600">Submit manual UPI deposit requests and track your investments.</p>
         </div>
         <div class="glass rounded-2xl p-5 text-sm text-slate-700">
           <h3 class="text-xl font-semibold mb-2">Referral Program</h3>
@@ -52,7 +56,7 @@
         </div>
       </section>
 
-      <section id="dashboardSection" class="hidden space-y-6">
+      <section id="dashboard-view" class="hidden space-y-6">
         <section class="md:hidden particle-bg relative space-y-4">
           <div class="mobile-header-glass p-4 fade-up">
             <div class="flex items-center justify-between mb-3">
@@ -110,12 +114,13 @@
           <form onsubmit="updateProfileEmail(event)" class="space-y-2 max-w-md">
             <label class="text-sm font-medium">Change Email</label>
             <input id="settings-new-email" type="email" placeholder="Enter new email" class="w-full px-3 py-2 rounded-xl border" />
-            <button class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium tap">Update Email</button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium tap">Update Email</button>
           </form>
           <form onsubmit="updateProfilePassword(event)" class="space-y-2 max-w-md">
             <label class="text-sm font-medium">Set / Change Password</label>
             <input id="settings-new-password" type="password" placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border" />
             <button class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
           </form>
           <div id="settings-msg" class="text-sm"></div>
         </section>
@@ -148,6 +153,21 @@
           <span>Disclaimer</span><span id="disclaimer-icon">+</span>
         </button>
         <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
+        </button>
+        <div id="privacy-content" class="footer-accordion-content text-slate-700">We collect only essential account and transaction data to provide wallet, investment, and withdrawal services securely.</div>
+
+        <button onclick="toggleFooterSection('disclaimer')" class="w-full text-left py-2 font-semibold flex items-center justify-between">
+          <span>Disclaimer</span><span id="disclaimer-icon">+</span>
+        </button>
+        <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
+      </div>
+    </footer>
+
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
+    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
+      <div class="flex items-center justify-between">
+        <h3 id="auth-title" class="text-xl font-bold">Login</h3>
+        <button onclick="closeModal('auth')">✕</button>
       </div>
     </footer>
   </div>
@@ -175,6 +195,41 @@
 
       <button id="deposit-now-btn" onclick="payNow()" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Pay Now</button>
       <button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Close</button>
+    </div>
+  </div>
+
+    <div id="plan-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="modal-content">
+      <h3 id="plan-name"></h3>
+      <p>Amount ₹<span id="plan-amount"></span></p>
+
+      <button onclick="payNow()" id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">
+      <button id="show-qr-btn" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Scan QR Code</button>
+
+      <div id="qrBox" class="hidden" style="margin-top:15px;">
+        <img id="upiQR" src="qr.png" width="220">
+        <p>Scan using any UPI app</p>
+      </div>
+
+      <button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+    </div>
+  </div>
+
+  <div id="payment-screen" class="payment-screen hidden">
+    <div class="payment-box">
+      <h2>Opening UPI...</h2>
+      <p>Please complete payment in your UPI app</p>
+    </div>
+  </div>
+
+  <div id="utr-modal" class="modal hidden">
+    <div class="modal-content">
+      <h3>Submit Payment UTR</h3>
+      <p>Amount ₹<span id="utr-amount"></span></p>
+      <input id="utr-input" type="text" required minlength="8" placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border mt-2" />
+      <button id="submit-utr-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Submit</button>
+      <button onclick="closeUTRModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+      <div id="utr-msg" class="text-sm mt-2"></div>
     </div>
   </div>
 
