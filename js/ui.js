@@ -261,7 +261,7 @@ function openPlanModal(name, amount) {
 }
 
 function payNow() {
-  const upiID = "yourupi@upi"; // 🔴 replace with your real UPI
+  const upiID = "razerpay@upi"; // 🔴 replace with your real UPI
 
   const url = `upi://pay?pa=${upiID}&pn=InvestHub&am=${selectedAmount}&cu=INR`;
 
