@@ -2,7 +2,6 @@ window.currentUser = null;
 const { createClient } = supabase;
 window.supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
 
-window.currentUser = null;
 window.authMode = "login";
 window.visiblePublicPlans = 6;
 window.visiblePrivatePlans = 4;
@@ -66,10 +65,16 @@ window.updateProfilePassword = async function updateProfilePassword(e) {
 
 window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
   window.currentUser = session?.user || null;
-  document.getElementById("public-view").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("dashboardSection").classList.toggle("hidden", !window.currentUser);
-  document.getElementById("guest-actions").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("user-Menu")?.classList.toggle("hidden", !window.currentUser);
+
+  const isLoggedIn = !!window.currentUser;
+
+  document.getElementById("guest-actions")?.classList.toggle("hidden", isLoggedIn);
+  document.getElementById("user-menu")?.classList.toggle("hidden", !isLoggedIn);
+
+  if (isLoggedIn) {
+    window.navigate("public-view");
+  }
+});
 
   if (window.currentUser) {
     document.getElementById("loginBtn")?.classList.add("hidden");
