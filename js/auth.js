@@ -84,8 +84,8 @@ window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
     await window.loadWallet();
     await window.fetchInvestments();
     window.attachPlanButtons?.();
-    window.showSection?.("homeSection");
-    window.navigate("home");
+    window.showSection?.("public-view");
+    window.navigate("public-view");
   } else {
     document.getElementById("loginBtn")?.classList.remove("hidden");
     document.getElementById("signupBtn")?.classList.remove("hidden");
