@@ -32,7 +32,7 @@ window.submitAuth = async function submitAuth(e) {
 
   if (res.error) return alert(res.error.message);
   window.closeModal("auth");
-  window.navigate("home");
+  window.navigate("("public-view");
 };
 
 window.logout = async function logout() {
@@ -69,7 +69,7 @@ window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
   document.getElementById("public-view").classList.toggle("hidden", !!window.currentUser);
   document.getElementById("dashboardSection").classList.toggle("hidden", !window.currentUser);
   document.getElementById("guest-actions").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("userMenu")?.classList.toggle("hidden", !window.currentUser);
+  document.getElementById("user-Menu")?.classList.toggle("hidden", !window.currentUser);
 
   if (window.currentUser) {
     document.getElementById("loginBtn")?.classList.add("hidden");
