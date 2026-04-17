@@ -17,57 +17,39 @@ window.toggleAuthMode = function toggleAuthMode() {
 };
 
 window.updateAuthModal = function updateAuthModal() {
-  const title = document.getElementById("auth-title");
-  const button = document.getElementById("auth-submit");
-
-  if (window.authMode === "login") {
-    title.textContent = "Login";
-    button.textContent = "Login";
-  } else {
-    title.textContent = "Sign Up";
-    button.textContent = "Sign Up";
-  }
+  document.getElementById("auth-title").textContent = window.authMode === "login" ? "Login" : "Sign Up";
+  document.getElementById("auth-submit").textContent = window.authMode === "login" ? "Login" : "Create Account";
+  document.getElementById("auth-switch").textContent = window.authMode === "login" ? "Need an account? Sign Up" : "Already have an account? Login";
 };
 
 window.submitAuth = async function submitAuth(e) {
   e.preventDefault();
-
   const email = document.getElementById("auth-email").value;
   const password = document.getElementById("auth-password").value;
+  const res = window.authMode === "login"
+    ? await window.supabaseClient.auth.signInWithPassword({ email, password })
+    : await window.supabaseClient.auth.signUp({ email, password });
 
-  let result;
+  if (res.error) return alert(res.error.message);
+  window.closeModal("auth");
+  window.navigate("home");
+};
 
-  if (window.authMode === "login") {
-    result = await window.supabaseClient.auth.signInWithPassword({
-      email,
-      password
-    });
-  } else {
-    result = await window.supabaseClient.auth.signUp({
-      email,
-      password
-    });
-  }
-
-  if (result.error) {
-    alert(result.error.message);
-  } else {
-    alert("Success!");
-    document.getElementById("auth-modal").classList.add("hidden");
-  }
+window.logout = async function logout() {
+  window.closeLogoutModal();
+  await window.supabaseClient.auth.signOut();
 };
 
 window.updateProfileEmail = async function updateProfileEmail(e) {
   e.preventDefault();
-
-  const email = document.getElementById("settings-new-email").value;
-
-  const { error } = await window.supabaseClient.auth.updateUser({
-    email: email
-  });
-
-  document.getElementById("settings-msg").textContent =
-    error ? error.message : "Email updated!";
+  const email = document.getElementById("profile-new-email").value || document.getElementById("settings-new-email").value;
+  const targets = ["profile-msg", "settings-msg"];
+  if (!email) return targets.forEach(id => document.getElementById(id).textContent = "Please enter a new email.");
+  const { error } = await window.supabaseClient.auth.updateUser({ email });
+  const text = error ? error.message : "Email update requested. Check your inbox to confirm.";
+  targets.forEach(id => document.getElementById(id).textContent = text);
+  document.getElementById("profile-new-email").value = "";
+  document.getElementById("settings-new-email").value = "";
 };
 
 window.updateProfilePassword = async function updateProfilePassword(e) {
@@ -85,26 +67,28 @@ window.updateProfilePassword = async function updateProfilePassword(e) {
 window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
   window.currentUser = session?.user || null;
   document.getElementById("public-view").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("dashboard-view").classList.toggle("hidden", !window.currentUser);
+  document.getElementById("dashboardSection").classList.toggle("hidden", !window.currentUser);
   document.getElementById("guest-actions").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("user-menu").classList.toggle("hidden", !window.currentUser);
-  document.getElementById("user-menu").classList.toggle("flex", !!window.currentUser);
+  document.getElementById("userMenu")?.classList.toggle("hidden", !window.currentUser);
 
   if (window.currentUser) {
+    document.getElementById("loginBtn")?.classList.add("hidden");
+    document.getElementById("signupBtn")?.classList.add("hidden");
     document.body.classList.toggle("mobile-dashboard", window.matchMedia("(max-width: 768px)").matches);
-    document.getElementById("welcome-name").textContent = window.currentUser.email.split("@")[0];
-    document.getElementById("mobile-welcome-name").textContent = window.currentUser.email.split("@")[0];
-    document.getElementById("profile-email").textContent = window.currentUser.email;
-    document.getElementById("profile-user-id").textContent = `User ID: ${window.currentUser.id}`;
+    const userLabel = window.currentUser.email.split("@")[0];
+    if (document.getElementById("welcome-name")) document.getElementById("welcome-name").textContent = userLabel;
+    if (document.getElementById("mobile-welcome-name")) document.getElementById("mobile-welcome-name").textContent = userLabel;
+    if (document.getElementById("profile-email")) document.getElementById("profile-email").textContent = window.currentUser.email;
+    if (document.getElementById("profile-user-id")) document.getElementById("profile-user-id").textContent = `User ID: ${window.currentUser.id}`;
     await window.ensureWalletExists();
     await window.loadWallet();
     await window.fetchInvestments();
-    await window.fetchDepositRequests();
+    window.attachPlanButtons?.();
+    window.showSection?.("homeSection");
     window.navigate("home");
-    }
   } else {
-  if (typeof attachPlanButtons === "function") {
-  attachPlanButtons();
+    document.getElementById("loginBtn")?.classList.remove("hidden");
+    document.getElementById("signupBtn")?.classList.remove("hidden");
     document.body.classList.remove("mobile-dashboard");
     window.closeAllNavPopovers();
     window.closeLogoutModal();
