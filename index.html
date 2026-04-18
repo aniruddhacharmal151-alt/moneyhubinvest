@@ -118,7 +118,6 @@
           <form onsubmit="updateProfilePassword(event)" class="space-y-2 max-w-md">
             <label class="text-sm font-medium">Set / Change Password</label>
             <input id="settings-new-password" type="password" placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border" />
-            <button class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
             <button type="submit" class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
           </form>
           <div id="settings-msg" class="text-sm"></div>
@@ -175,8 +174,13 @@
       <h3 id="plan-name"></h3>
       <p>Amount ₹<span id="plan-amount"></span></p>
 
-      <button onclick="payNow()" id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">
-      <button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
+      <button id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">
+  Pay Now
+</button>
+
+<button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">
+  Cancel
+</button>
     </div>
   </div>
 
