@@ -51,174 +51,47 @@
     .highlight-btn { box-shadow: 0 0 24px rgba(59,130,246,.45); }
     .highlight-btn-gold { box-shadow: 0 0 24px rgba(245, 158, 11,.45); }
 
-    .plans-mobile {
-      display: flex;
-      gap: 1rem;
-      overflow-x: auto;
-      scroll-snap-type: x mandatory;
-      padding-bottom: .25rem;
-    }
-    .plans-mobile > .plan-card { min-width: 85%; scroll-snap-align: center; }
-    .public-plan-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: .85rem;
-    }
-    .public-plan-grid > .plan-card { min-width: 0; }
-
-    .mobile-header-glass, .wallet-glass, .stat-glass, .recent-glass {
-      background: linear-gradient(145deg, rgba(255,255,255,.09), rgba(255,255,255,.03));
-      border: 1px solid rgba(255,255,255,.1);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 14px 30px rgba(0, 0, 0, .25);
-      border-radius: 20px;
-    }
-    .wallet-glass {
-      position: relative;
-      overflow: hidden;
-      background: linear-gradient(170deg, rgba(255,255,255,.11), rgba(255,255,255,.04));
-    }
-    .wallet-glass::after {
-      content: "";
-      position: absolute;
-      left: 50%;
-      bottom: -20px;
-      width: 180px;
-      height: 80px;
-      transform: translateX(-50%);
-      background: radial-gradient(circle, rgba(251, 191, 36, .35), transparent 70%);
-      pointer-events: none;
-    }
-    .fade-up { animation: fadeUp .3s ease-in-out both; }
-    .delay-1 { animation-delay: .1s; }
-    .particle-bg::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle at 20% 25%, rgba(255,255,255,.11) 0 1px, transparent 2px), radial-gradient(circle at 80% 18%, rgba(255,255,255,.09) 0 1px, transparent 2px), radial-gradient(circle at 45% 70%, rgba(255,255,255,.08) 0 1px, transparent 2px);
-      pointer-events: none;
-    }
-    @keyframes fadeUp { from { opacity: 0; transform: translateY(14px);} to { opacity: 1; transform: translateY(0);} }
-
-    .fade-slide-enter { animation: slideFade .4s ease both; }
-    @keyframes slideFade { from { opacity: 0; transform: translateY(18px);} to { opacity: 1; transform: translateY(0);} }
-    @keyframes fadeCard { from { opacity: 0; transform: translateX(18px);} to { opacity: 1; transform: translateX(0);} }
-
-    @media (min-width: 768px) {
-      .plans-mobile { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); overflow: visible; }
-      .plans-mobile > .plan-card { min-width: 0; }
-      .public-plan-grid { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
-      @keyframes fadeCard { from { opacity: 0; } to { opacity: 1; } }
-    }
-
-    .footer-accordion-content {
-      max-height: 0;
-      opacity: 0;
-      overflow: hidden;
-      transition: max-height .3s ease-in-out, opacity .3s ease-in-out;
-    }
-    .footer-accordion-content.open { max-height: 140px; opacity: 1; }
-    .nav-popover {
-      position: absolute;
-      top: calc(100% + 10px);
-      width: 220px;
-      background: linear-gradient(145deg, rgba(255,255,255,.92), rgba(248,250,252,.86));
-      border: 1px solid rgba(148,163,184,.3);
-      box-shadow: 0 14px 28px rgba(15,23,42,.18);
-      backdrop-filter: blur(12px);
-      border-radius: 14px;
-      padding: .5rem;
-      z-index: 60;
-    }
-    .mobile-dashboard .nav-popover {
-      background: linear-gradient(145deg, rgba(15,23,42,.76), rgba(2,6,23,.7));
-      border-color: rgba(148,163,184,.3);
-      color: #e2e8f0;
-    }
-    .menu-item { width: 100%; text-align: left; padding: .6rem .8rem; border-radius: .7rem; transition: all .3s ease-in-out; }
-    .menu-item:hover { background: rgba(148,163,184,.15); }
-
-    @media (max-width: 767px) {
-      #dashboard-view { position: relative; }
-      .mobile-sheet { align-items: end; }
-      .mobile-sheet > .sheet-card {
-        width: 100%;
-        border-radius: 1.25rem 1.25rem 0 0;
-        max-height: 84vh;
-        overflow: auto;
-      .top-nav {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  width: fit-content;
-}
-
-.top-nav button {
-  background: transparent;
-  border: 1px solid rgba(148,163,184,0.3);
-  font-size: 13px;
-  color: #334155;
-}
-
-.top-nav button:hover {
-  background: rgba(148,163,184,0.15);
-}
-
-  </style>
 </head>
 <body class="h-full text-slate-800">
   <div class="min-h-full">
     <nav class="sticky top-0 z-50 border-b border-white/40 glass">
       <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
-        <div class="font-bold text-xl">💎 InvestHub</div>
+<div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2">
+
+  <div class="font-bold text-xl self-center">InvestHub</div>
+
+  <div id="guest-actions" class="flex items-center gap-2 justify-center">
+    <button type="button" id="loginBtn" onclick="openModal('auth','login')" class="px-4 py-2 rounded-xl text-blue-700 btn-premium">
+      Login
+    </button>
+
+    <button type="button" id="signupBtn" onclick="openModal('auth','signup')" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium">
+      Sign Up
+    </button>
+  </div>
+
+  <div id="userMenu" class="menu hidden">
+    <div class="menu-icon" onclick="toggleMenu()">☰</div>
+
+    <div id="dropdownMenu" class="dropdown hidden">
+      <div onclick="showSection('depositSection')">Deposit</div>
+      <div onclick="showSection('withdrawSection')">Withdraw</div>
+      <div onclick="showSection('homeSection')">Home</div>
+    </div>
+  </div>
+
+</div>
         <div id="guest-actions" class="flex items-center gap-2">
-          <button id="loginBtn" onclick="openModal('auth','login')" class="px-4 py-2 rounded-xl text-blue-700 btn-premium">Login</button>
-          <button id="signupBtn" onclick="openModal('auth','signup')" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium">Sign Up</button>
+          <button type="button" id="loginBtn" onclick="openModal('auth','login')" class="px-4 py-2 rounded-xl text-blue-700 btn-premium">Login</button>
+          <button type="button" id="signupBtn" onclick="openModal('auth','signup')" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium">Sign Up</button>
         </div>
         <div id="userMenu" class="menu hidden">
           <div class="menu-icon" onclick="toggleMenu()">☰</div>
           <div id="dropdownMenu" class="dropdown hidden">
-            <div onclick="showSection('depositSection')">Deposit</div>
             <div onclick="showSection('withdrawSection')">Withdraw</div>
             <div onclick="showSection('homeSection')">Home</div>
-      <div class="max-w-6xl mx-auto px-4 py-3 flex flex-col gap-2">
-        <div class="font-bold text-xl self-center">InvestHub</div>
-        <div id="guest-actions" class="flex items-center gap-2">
-          <button onclick="openModal('auth','login')" class="px-4 py-2 rounded-xl text-blue-700 btn-premium">Login</button>
-          <button onclick="openModal('auth','signup')" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium">Sign Up</button>
-        </div>
-        <div id="user-menu" class="flex flex-col gap-2 w-full">
-          <div class="top-nav flex flex-wrap gap-2">
-  <button onclick="navigateFromMenu('deposit')" class="px-3 py-2 rounded-lg">Deposit</button>
-  <button onclick="navigateFromMenu('withdraw')" class="px-3 py-2 rounded-lg">Withdraw</button>
-  <button onclick="confirmLogout()" class="px-3 py-2 rounded-lg text-red-500">Logout</button>
-</div>
-          <div class="hidden sm:block text-sm glass rounded-xl px-3 py-2 w-fit">
-            <span id="welcome-name" class="font-semibold"></span>
-            <span class="mx-1">|</span>
-            <span id="wallet-balance" class="font-bold text-emerald-700">₹0</span>
-          </div>
-          <button onclick="toggleProfilePanel()" class="w-10 h-10 rounded-full border border-white/50 glass btn-premium tap flex items-center justify-center font-semibold">👤</button>
-          <div id="profile-popover" class="hidden nav-popover right-0 text-sm space-y-2">
-            <div class="px-2 py-1 border-b border-slate-300/35">
-              <div class="font-semibold">Profile</div>
-              <div id="profile-email" class="break-all text-xs"></div>
-              <div id="profile-user-id" class="text-[11px] text-slate-500"></div>
-            </div>
-            <form onsubmit="updateProfileEmail(event)" class="space-y-2 px-2">
-              <input id="profile-new-email" type="email" placeholder="Change email" class="w-full px-2 py-1 rounded-lg border" />
-              <button class="menu-item border border-slate-300">Update Email</button>
-            </form>
-            <form onsubmit="updateProfilePassword(event)" class="space-y-2 px-2 pb-1">
-              <input id="profile-new-password" type="password" placeholder="Set / Change password" class="w-full px-2 py-1 rounded-lg border" />
-              <button class="menu-item border border-slate-300">Update Password</button>
-            </form>
-            <div id="profile-msg" class="px-2 pb-1 text-xs"></div>
           </div>
         </div>
-      </div>
     </nav>
 
     <main class="max-w-6xl mx-auto px-4 py-8 space-y-8">
@@ -236,14 +109,13 @@
           <h3 class="text-xl font-semibold mb-3">How it Works</h3>
           <div class="grid sm:grid-cols-3 gap-3 text-sm text-slate-700">
             <div>1. Sign up/login and choose a plan.</div>
-            <div>2. Make payment via manual UPI and submit UTR for approval.</div>
+            <div>2. Review the selected plan details in the payment modal.</div>
             <div>3. Track live countdown and withdraw after maturity.</div>
           </div>
         </section>
 
-        <div class="glass rounded-2xl p-4 md:p-6">
-          <h2 class="text-2xl font-bold">Home Dashboard</h2>
-          <p class="text-slate-600">Submit manual UPI deposit requests and track your investments.</p>
+        <div class="glass rounded-2xl p-4 md:p-6">wellcome<h2 class="text-2xl font-bold">Home </h2>
+          <p class="text-slate-600">Select a plan and pay using UPI.</p>
         </div>
         <div class="glass rounded-2xl p-5 text-sm text-slate-700">
           <h3 class="text-xl font-semibold mb-2">Referral Program</h3>
@@ -281,7 +153,7 @@
 
         <div class="glass rounded-2xl p-4 md:p-6">
           <h2 class="text-2xl font-bold">Home Dashboard</h2>
-          <p class="text-slate-600">Submit manual UPI deposit requests and track your investments.</p>
+          <p class="text-slate-600">Choose a plan, pay instantly, and track your investments.</p>
         </div>
 
         <section id="homeSection" class="space-y-4">
@@ -293,25 +165,31 @@
           </div>
         </section>
 
-        <section id="depositSection" class="hidden glass rounded-2xl p-5">
         <section id="deposit-section" class="hidden glass rounded-2xl p-5">
-          <h3 class="text-xl font-semibold mb-2">Deposit</h3>
-          <p class="text-slate-600">Select any plan card and submit a manual UPI deposit request with UTR.</p>
-          <div class="mt-4 rounded-xl bg-white/45 p-3 text-sm border border-white/40">
-            <div class="font-semibold">Total Deposited: <span id="deposit-total">₹0</span></div>
-            <div id="deposit-history" class="mt-2">
-              <h4 class="font-semibold mb-2">Deposit History</h4>
-              <ul id="deposit-list" class="space-y-2"></ul>
-            </div>
-          </div>
-        </section>
+  <h3 class="text-xl font-semibold mb-2">Deposit</h3>
+  <p class="text-slate-600">
+    Select any plan card and submit a manual UPI deposit request with UTR.
+  </p>
 
-        <section id="withdrawSection" class="hidden glass rounded-2xl p-5 space-y-4">
-            <div id="deposit-history" class="mt-2 space-y-2"></div>
-          </div>
-        </section>
+  <div class="mt-4 rounded-xl bg-white/45 p-3 text-sm border border-white/40">
+    <div class="font-semibold">
+      Total Deposited: <span id="deposit-total">₹0</span>
+    </div>
+
+    <div id="deposit-history" class="mt-2">
+      <h4 class="font-semibold mb-2">Deposit History</h4>
+      <ul id="deposit-list" class="space-y-2"></ul>
+    </div>
+  </div>
+</section>
+
+
+<section id="withdraw-section" class="hidden glass rounded-2xl p-5 space-y-4">
+  <!-- your withdraw content here -->
+</section>
 
         <section id="withdraw-section" class="hidden glass rounded-2xl p-5 space-y-4">
+        <section id="withdrawSection" class="hidden glass rounded-2xl p-5 space-y-4">
           <h3 class="text-xl font-semibold">Withdraw</h3>
           <form id="withdraw-form" class="grid md:grid-cols-3 gap-3" onsubmit="handleWithdraw(event)">
             <input id="withdraw-amount" type="number" min="1000" step="100" required placeholder="Amount ₹ (min 1000)" class="px-3 py-2 rounded-xl border" />
@@ -330,12 +208,12 @@
           <form onsubmit="updateProfileEmail(event)" class="space-y-2 max-w-md">
             <label class="text-sm font-medium">Change Email</label>
             <input id="settings-new-email" type="email" placeholder="Enter new email" class="w-full px-3 py-2 rounded-xl border" />
-            <button class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium tap">Update Email</button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 text-white btn-premium tap">Update Email</button>
           </form>
           <form onsubmit="updateProfilePassword(event)" class="space-y-2 max-w-md">
             <label class="text-sm font-medium">Set / Change Password</label>
             <input id="settings-new-password" type="password" placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border" />
-            <button class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-slate-700 text-white btn-premium tap">Update Password</button>
           </form>
           <div id="settings-msg" class="text-sm"></div>
         </section>
@@ -382,10 +260,9 @@
         <div id="disclaimer-content" class="footer-accordion-content text-slate-700">This platform does not promise fixed profits. Please invest responsibly and only with funds you can afford to risk.</div>
       </div>
     </footer>
-  </div>
 
-  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
-    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
+  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="w-full max-w-md glass rounded-2xl p-5 space-y-3 bg-white">
       <div class="flex items-center justify-between">
         <h3 id="auth-title" class="text-xl font-bold">Login</h3>
         <button onclick="closeModal('auth')">✕</button>
@@ -399,55 +276,49 @@
     </div>
   </div>
 
-    <div id="plan-modal" class="modal hidden">
+    <div id="plan-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="modal-content">
       <h3 id="plan-name"></h3>
       <p>Amount ₹<span id="plan-amount"></span></p>
 
-      <button id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Pay with UPI App</button>
-
-      <button id="show-qr-btn" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Scan QR Code</button>
-
-      <div id="qrBox" class="hidden" style="margin-top:15px;">
-        <img id="upiQR" width="220">
-        <p>Scan using any UPI app</p>
-      </div>
+      <button id="deposit-now-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">
+  Pay Now
+</button>
     </footer>
   </div>
 
   <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
-    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 id="auth-title" class="text-xl font-bold">Login</h3>
-        <button onclick="closeModal('auth')">✕</button>
-      </div>
-      <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-3">
-        <input id="auth-email" type="email" required placeholder="Email" class="w-full px-3 py-2 rounded-xl border" />
-        <input id="auth-password" type="password" required placeholder="Password" class="w-full px-3 py-2 rounded-xl border" />
-        <button id="auth-submit" class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium tap">Login</button>
-      </form>
-      <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm"></button>
+  <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
+    <div class="flex items-center justify-between">
+      <h3 id="auth-title" class="text-xl font-bold">Login</h3>
+      <button type="button" onclick="closeModal('auth')">✕</button>
     </div>
+
+    <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-3">
+      <input id="auth-email" type="email" required placeholder="Email" class="w-full px-3 py-2 rounded-xl border" />
+      <input id="auth-password" type="password" required placeholder="Password" class="w-full px-3 py-2 rounded-xl border" />
+      <button type="submit" id="auth-submit" class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium tap">
+        Login
+      </button>
+    </form>
+
+    <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm"></button>
   </div>
+</div>
 
-      <div id="depositModal" class="modal hidden">
-    <div class="modal-content glass">
-      <h3 class="text-xl font-semibold">Deposit</h3>
-      <p class="mt-2">UPI ID: <span class="font-semibold">razerpay@upi</span></p>
-      <p class="text-sm mt-1">Plan: <span id="modalPlanName"></span></p>
+<div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+  <div class="glass rounded-2xl p-5 space-y-3 text-center">
+    <p class="text-lg font-semibold">Are you sure you want to logout?</p>
 
-      <button id="upiPayBtn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Pay Now</button>
-      <button id="paidBtn" class="w-full rounded-xl border border-slate-300 py-2 mt-2">I Have Paid</button>
-      <p id="depositStatusMsg" class="text-sm mt-2"></p>
+    <button onclick="logout()" class="w-full rounded-xl bg-red-500 text-white py-2">
+      Yes, Logout
+    </button>
 
-      <button onclick="closeDepositModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Close</button>
-    </div>
+    <button type="button" onclick="closeLogoutModal()" class="w-full rounded-xl border border-slate-300 py-2">
+      Cancel
+    </button>
   </div>
-
-<div id="logout-modal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm items-center justify-center p-4">
-      <button onclick="closePlanModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
-    </div>
-  </div>
+</div>
 
   <div id="payment-screen" class="payment-screen hidden">
     <div class="payment-box">
@@ -460,7 +331,7 @@
     <div class="modal-content">
       <h3>Submit Payment UTR</h3>
       <p>Amount ₹<span id="utr-amount"></span></p>
-      <input id="utr-input" placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border mt-2" />
+      <input id="utr-input" type="text" required minlength="8" placeholder="Enter UTR number" class="w-full px-3 py-2 rounded-xl border mt-2" />
       <button id="submit-utr-btn" class="w-full rounded-xl bg-violet-600 text-white py-2 btn-premium tap mt-3">Submit</button>
       <button onclick="closeUTRModal()" class="w-full rounded-xl border border-slate-300 py-2 mt-2">Cancel</button>
       <div id="utr-msg" class="text-sm mt-2"></div>
@@ -479,24 +350,8 @@
 
 <script src="js/auth.js"></script>
 <script src="js/wallet.js"></script>
-<script src="js/deposit.js"></script>
 <script src="js/withdraw.js"></script>
 <script src="js/ui.js"></script>
-  </div>
-
-  <div id="auth-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">
-    <div class="sheet-card w-full max-w-md glass rounded-2xl p-5 space-y-3">
-      <div class="flex items-center justify-between">
-        <h3 id="auth-title" class="text-xl font-bold">Login</h3>
-        <button onclick="closeModal('auth')">✕</button>
-      </div>
-      <form id="auth-form" onsubmit="submitAuth(event)" class="space-y-3">
-        <input id="auth-email" type="email" required placeholder="Email" class="w-full px-3 py-2 rounded-xl border" />
-        <input id="auth-password" type="password" required placeholder="Password" class="w-full px-3 py-2 rounded-xl border" />
-        <button id="auth-submit" class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium tap">Login</button>
-      </form>
-      <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm"></button>
-    </div>
   </div>
 
   <div id="deposit-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm items-center justify-center p-4 mobile-sheet">

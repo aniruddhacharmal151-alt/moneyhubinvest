@@ -74,35 +74,21 @@ window.openUPIPayment = function openUPIPayment(amount) {
   }, 1200);
 };
 
-window.generateQR = function generateQR(amount) {
-  const upi = `upi://pay?pa=${UPI_ID}&pn=InvestHub&am=${amount}&cu=INR`;
-  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upi)}`;
-  document.getElementById("upiQR").src = qrURL;
-  document.getElementById("qrBox").classList.remove("hidden");
-};
-
 window.openPlanModal = function openPlanModal(name, amount) {
   document.getElementById("plan-name").textContent = name;
   document.getElementById("plan-amount").textContent = amount;
 
   const depositBtn = document.getElementById("deposit-now-btn");
-  const qrBtn = document.getElementById("show-qr-btn");
 
   depositBtn.onclick = () => {
     window.openUPIPayment(amount);
   };
 
-  qrBtn.onclick = () => {
-    window.generateQR(amount);
-  };
-
-  window.generateQR(amount);
   document.getElementById("plan-modal").classList.remove("hidden");
 };
 
 window.closePlanModal = function closePlanModal() {
   document.getElementById("plan-modal").classList.add("hidden");
-  document.getElementById("qrBox").classList.add("hidden");
 };
 
 window.openModal = function openModal(type, mode = "login") {
@@ -174,23 +160,48 @@ window.createPlanCard = function createPlanCard(plan, loggedIn) {
       <p>Total Return: <span class="font-semibold">${window.formatCurrency(plan.totalReturn)}</span></p>
       <p>Plan Amount: <span class="font-semibold">${window.formatCurrency(plan.amount)}</span></p>
     </div>
-    <button class="plan-btn mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium" data-plan="${plan.name}" data-amount="${plan.amount}">${loggedIn ? "Deposit" : "Login to Activate"}</button>
-  `;
+ 
+card.innerHTML = `
+  <h4 class="text-lg font-bold">${plan.name}</h4>
+  <p class="text-sm text-slate-600 mt-1">${plan.days} Days Cycle</p>
+  <p class="text-sm text-slate-600">
+    Return: ~${Math.round((plan.totalReturn / plan.amount) * 100)}%
+  </p>
 
-  if (!loggedIn) {
-    card.querySelector("button").onclick = () => window.openModal("auth", "login");
-  }
-    <button class="mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium">${loggedIn ? "Deposit" : "Login to Activate"}</button>
-  `;
+  <div class="mt-3 space-y-1 text-sm">
+    <p>Daily Return: <span class="font-semibold">${window.formatCurrency(plan.dailyReturn)}</span></p>
+    <p>Total Return: <span class="font-semibold">${window.formatCurrency(plan.totalReturn)}</span></p>
+    <p>Plan Amount: <span class="font-semibold">${window.formatCurrency(plan.amount)}</span></p>
+  </div>
 
+  <button class="plan-btn mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium">
+    ${loggedIn ? "Deposit" : "Login to Activate"}
+  </button>
+`;
+
+if (!loggedIn) {
+  card.querySelector("button").onclick = () => window.openModal("auth", "login");
+} else {
   card.querySelector("button").onclick = () => {
-    if (!loggedIn) return window.openModal("auth", "login");
     window.selectedPlan = plan;
     window.openPlanModal(plan.name, plan.amount);
   };
-  return card;
-};
+}
 
+return card;
+ 
+`;
+
+if (!loggedIn) {
+  card.querySelector("button").onclick = () => window.openModal("auth", "login");
+} else {
+  card.querySelector("button").onclick = () => {
+    window.selectedPlan = plan;
+    window.openPlanModal(plan.name, plan.amount);
+  };
+}
+ return card;
+ 
 window.renderPlans = function renderPlans() {
   const publicList = document.getElementById("public-plan-list");
   publicList.innerHTML = "";
@@ -216,11 +227,30 @@ window.loadMorePlans = function loadMorePlans(type) {
 
 window.navigate = function navigate(section) {
   document.getElementById("homeSection").classList.toggle("hidden", section !== "home");
-  document.getElementById("depositSection").classList.toggle("hidden", section !== "deposit");
   document.getElementById("withdrawSection").classList.toggle("hidden", section !== "withdraw");
   document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
   if (section === "withdraw") window.renderWithdrawInvestments();
-  if (section === "deposit") window.renderDepositHistory(window.latestDepositRequests);
+};
+
+window.fetchInvestments = async function fetchInvestments() {
+  if (!window.currentUser) return;
+  const { data } = await window.supabaseClient.from("investments").select("*").eq("user_id", window.currentUser.id).order("start_timestamp", { ascending: false });
+  const list = data || [];
+  window.latestInvestments = list;
+  window.updateDashboardStats(list);
+  window.renderInvestmentTimers(list);
+  window.renderWithdrawInvestments(list);
+  window.renderRecentTransactions(list);
+};
+
+window.updateDashboardStats = function updateDashboardStats(investments = []) {
+  const active = investments.filter(i => i.status === "active").length;
+  const earnings = investments.reduce((sum, i) => {
+    const plan = window.plans.find(p => p.id === i.plan_id);
+    return sum + Math.max(0, (plan?.totalReturn || i.amount) - i.amount);
+  }, 0);
+  document.getElementById("active-count").textContent = active;
+  document.getElementById("total-earnings").textContent = window.formatCurrency(earnings);
 };
 
 window.fetchInvestments = async function fetchInvestments() {
@@ -290,9 +320,31 @@ window.renderInvestmentTimers = function renderInvestmentTimers(investments = []
   window.countdownTimer = setInterval(draw, 1000);
 };
 
-window.initDepositFlow?.();
+window.renderPlans();
+
+// close menu when clicking outside
 document.addEventListener("click", (event) => {
   if (!event.target.closest("#user-menu")) window.closeAllNavPopovers();
 });
 
-window.renderPlans();
+// store selected amount
+let selectedAmount = 0;
+
+// open plan popup
+function openPlanModal(name, amount) {
+  document.getElementById("plan-name").innerText = name;
+  document.getElementById("plan-amount").innerText = amount;
+
+  selectedAmount = amount;
+
+  document.getElementById("plan-modal").classList.remove("hidden");
+}
+
+// UPI payment
+function payNow() {
+  const upiID = "Razerpay@upi"; // 🔴 PUT YOUR REAL UPI HERE
+
+  const url = `upi://pay?pa=${upiID}&pn=InvestHub&am=${selectedAmount}&cu=INR`;
+
+  window.location.href = url;
+}

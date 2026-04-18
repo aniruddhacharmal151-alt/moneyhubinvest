@@ -2,7 +2,6 @@ window.currentUser = null;
 const { createClient } = supabase;
 window.supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
 
-window.currentUser = null;
 window.authMode = "login";
 window.visiblePublicPlans = 6;
 window.visiblePrivatePlans = 4;
@@ -32,7 +31,7 @@ window.submitAuth = async function submitAuth(e) {
 
   if (res.error) return alert(res.error.message);
   window.closeModal("auth");
-  window.navigate("home");
+  window.navigate("("public-view");
 };
 
 window.logout = async function logout() {
@@ -66,27 +65,35 @@ window.updateProfilePassword = async function updateProfilePassword(e) {
 
 window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
   window.currentUser = session?.user || null;
-  document.getElementById("public-view").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("dashboard-view").classList.toggle("hidden", !window.currentUser);
-  document.getElementById("guest-actions").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("user-menu").classList.toggle("hidden", !window.currentUser);
-  document.getElementById("user-menu").classList.toggle("flex", !!window.currentUser);
+
+  const isLoggedIn = !!window.currentUser;
+
+  document.getElementById("guest-actions")?.classList.toggle("hidden", isLoggedIn);
+  document.getElementById("user-menu")?.classList.toggle("hidden", !isLoggedIn);
+
+  if (isLoggedIn) {
+    window.navigate("public-view");
+  }
+});
 
   if (window.currentUser) {
+    document.getElementById("loginBtn")?.classList.add("hidden");
+    document.getElementById("signupBtn")?.classList.add("hidden");
     document.body.classList.toggle("mobile-dashboard", window.matchMedia("(max-width: 768px)").matches);
-    document.getElementById("welcome-name").textContent = window.currentUser.email.split("@")[0];
-    document.getElementById("mobile-welcome-name").textContent = window.currentUser.email.split("@")[0];
-    document.getElementById("profile-email").textContent = window.currentUser.email;
-    document.getElementById("profile-user-id").textContent = `User ID: ${window.currentUser.id}`;
+    const userLabel = window.currentUser.email.split("@")[0];
+    if (document.getElementById("welcome-name")) document.getElementById("welcome-name").textContent = userLabel;
+    if (document.getElementById("mobile-welcome-name")) document.getElementById("mobile-welcome-name").textContent = userLabel;
+    if (document.getElementById("profile-email")) document.getElementById("profile-email").textContent = window.currentUser.email;
+    if (document.getElementById("profile-user-id")) document.getElementById("profile-user-id").textContent = `User ID: ${window.currentUser.id}`;
     await window.ensureWalletExists();
     await window.loadWallet();
     await window.fetchInvestments();
-    await window.fetchDepositRequests();
-    window.navigate("home");
-    }
+    window.attachPlanButtons?.();
+    window.showSection?.("public-view");
+    window.navigate("public-view");
   } else {
-  if (typeof attachPlanButtons === "function") {
-  attachPlanButtons();
+    document.getElementById("loginBtn")?.classList.remove("hidden");
+    document.getElementById("signupBtn")?.classList.remove("hidden");
     document.body.classList.remove("mobile-dashboard");
     window.closeAllNavPopovers();
     window.closeLogoutModal();
