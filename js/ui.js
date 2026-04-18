@@ -47,35 +47,21 @@ window.openUPIPayment = function openUPIPayment(amount) {
   }, 1200);
 };
 
-window.generateQR = function generateQR(amount) {
-  const upi = `upi://pay?pa=${UPI_ID}&pn=InvestHub&am=${amount}&cu=INR`;
-  const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(upi)}`;
-  document.getElementById("upiQR").src = qrURL;
-  document.getElementById("qrBox").classList.remove("hidden");
-};
-
 window.openPlanModal = function openPlanModal(name, amount) {
   document.getElementById("plan-name").textContent = name;
   document.getElementById("plan-amount").textContent = amount;
 
   const depositBtn = document.getElementById("deposit-now-btn");
-  const qrBtn = document.getElementById("show-qr-btn");
 
   depositBtn.onclick = () => {
     window.openUPIPayment(amount);
   };
 
-  qrBtn.onclick = () => {
-    window.generateQR(amount);
-  };
-
-  window.generateQR(amount);
   document.getElementById("plan-modal").classList.remove("hidden");
 };
 
 window.closePlanModal = function closePlanModal() {
   document.getElementById("plan-modal").classList.add("hidden");
-  document.getElementById("qrBox").classList.add("hidden");
 };
 
 window.openModal = function openModal(type, mode = "login") {
