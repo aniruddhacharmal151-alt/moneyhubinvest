@@ -1,3 +1,8 @@
+window.plans = [
+  { id: 1, name: "Plan A", amount: 6000, days: 35, dailyReturn: 180, totalReturn: 12000, aura: "rgba(125,211,252,.32)" },
+  { id: 2, name: "Plan B", amount: 16000, days: 45, dailyReturn: 420, totalReturn: 26000, aura: "rgba(196,181,253,.30)" },
+  { id: 3, name: "Plan C", amount: 22000, days: 60, dailyReturn: 560, totalReturn: 42000, aura: "rgba(244,114,182,.24)" },
+  { id: 4, name: "Plan D", amount: 30000, days: 75, dailyReturn: 800, totalReturn: 60000, aura: "rgba(110,231,183,.30)" },
 const UPI_ID = "razerpay@upi";
 
 window.plans = [
@@ -37,6 +42,28 @@ window.formatTime = function formatTime(ms) {
 };
 
 
+
+window.attachPlanButtons = function attachPlanButtons() {
+  document.querySelectorAll(".plan-btn").forEach((btn) => {
+    btn.onclick = function () {
+      const plan = this.dataset.plan;
+      const amount = this.dataset.amount;
+      window.openDepositPopup(plan, amount);
+    };
+  });
+};
+
+
+window.toggleMenu = function toggleMenu() {
+  document.getElementById("dropdownMenu")?.classList.toggle("hidden");
+};
+
+window.showSection = function showSection(sectionId) {
+  ["homeSection", "depositSection", "withdrawSection"].forEach((id) => {
+    document.getElementById(id)?.classList.add("hidden");
+  });
+  document.getElementById(sectionId)?.classList.remove("hidden");
+  document.getElementById("dropdownMenu")?.classList.add("hidden");
 window.openUPIPayment = function openUPIPayment(amount) {
   const upiLink = `upi://pay?pa=${UPI_ID}&pn=InvestHub&am=${amount}&cu=INR`;
   localStorage.setItem("pendingDepositAmount", String(amount));
@@ -82,6 +109,8 @@ window.closeModal = function closeModal(type) {
 window.closeAllNavPopovers = function closeAllNavPopovers() {
   document.getElementById("top-menu-popover")?.classList.add("hidden");
   document.getElementById("profile-popover")?.classList.add("hidden");
+  document.getElementById("top-menu-popover").classList.add("hidden");
+  document.getElementById("profile-popover").classList.add("hidden");
 };
 
 window.toggleTopMenu = function toggleTopMenu() {
@@ -131,17 +160,48 @@ window.createPlanCard = function createPlanCard(plan, loggedIn) {
       <p>Total Return: <span class="font-semibold">${window.formatCurrency(plan.totalReturn)}</span></p>
       <p>Plan Amount: <span class="font-semibold">${window.formatCurrency(plan.amount)}</span></p>
     </div>
-    <button class="plan-btn mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium" data-plan="${plan.name}" data-amount="${plan.amount}">${loggedIn ? "Deposit" : "Login to Activate"}</button>
-  `;
-  
+ 
+card.innerHTML = `
+  <h4 class="text-lg font-bold">${plan.name}</h4>
+  <p class="text-sm text-slate-600 mt-1">${plan.days} Days Cycle</p>
+  <p class="text-sm text-slate-600">
+    Return: ~${Math.round((plan.totalReturn / plan.amount) * 100)}%
+  </p>
+
+  <div class="mt-3 space-y-1 text-sm">
+    <p>Daily Return: <span class="font-semibold">${window.formatCurrency(plan.dailyReturn)}</span></p>
+    <p>Total Return: <span class="font-semibold">${window.formatCurrency(plan.totalReturn)}</span></p>
+    <p>Plan Amount: <span class="font-semibold">${window.formatCurrency(plan.amount)}</span></p>
+  </div>
+
+  <button class="plan-btn mt-4 w-full rounded-xl py-2 text-white ${isHighest ? "bg-amber-500 highlight-btn-gold" : "bg-blue-600"} ${isLowest ? "highlight-btn" : ""} btn-premium">
+    ${loggedIn ? "Deposit" : "Login to Activate"}
+  </button>
+`;
+
+if (!loggedIn) {
+  card.querySelector("button").onclick = () => window.openModal("auth", "login");
+} else {
   card.querySelector("button").onclick = () => {
-    if (!loggedIn) return window.openModal("auth", "login");
     window.selectedPlan = plan;
     window.openPlanModal(plan.name, plan.amount);
   };
-  return card;
-};
+}
 
+return card;
+ 
+`;
+
+if (!loggedIn) {
+  card.querySelector("button").onclick = () => window.openModal("auth", "login");
+} else {
+  card.querySelector("button").onclick = () => {
+    window.selectedPlan = plan;
+    window.openPlanModal(plan.name, plan.amount);
+  };
+}
+ return card;
+ 
 window.renderPlans = function renderPlans() {
   const publicList = document.getElementById("public-plan-list");
   publicList.innerHTML = "";
@@ -170,6 +230,27 @@ window.navigate = function navigate(section) {
   document.getElementById("withdrawSection").classList.toggle("hidden", section !== "withdraw");
   document.getElementById("settings-section").classList.toggle("hidden", section !== "settings");
   if (section === "withdraw") window.renderWithdrawInvestments();
+};
+
+window.fetchInvestments = async function fetchInvestments() {
+  if (!window.currentUser) return;
+  const { data } = await window.supabaseClient.from("investments").select("*").eq("user_id", window.currentUser.id).order("start_timestamp", { ascending: false });
+  const list = data || [];
+  window.latestInvestments = list;
+  window.updateDashboardStats(list);
+  window.renderInvestmentTimers(list);
+  window.renderWithdrawInvestments(list);
+  window.renderRecentTransactions(list);
+};
+
+window.updateDashboardStats = function updateDashboardStats(investments = []) {
+  const active = investments.filter(i => i.status === "active").length;
+  const earnings = investments.reduce((sum, i) => {
+    const plan = window.plans.find(p => p.id === i.plan_id);
+    return sum + Math.max(0, (plan?.totalReturn || i.amount) - i.amount);
+  }, 0);
+  document.getElementById("active-count").textContent = active;
+  document.getElementById("total-earnings").textContent = window.formatCurrency(earnings);
 };
 
 window.fetchInvestments = async function fetchInvestments() {
