@@ -16,6 +16,9 @@ window.plans = [
   { id: 8, name: "Plan H", amount: 65000, days: 180, dailyReturn: 1800, totalReturn: 130000, aura: "rgba(250,204,21,.24)" }
 ];
 
+window.visiblePublicPlans = 3;
+window.visiblePrivatePlans = 3;
+
 window.formatCurrency = function formatCurrency(amount) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", minimumFractionDigits: 0 }).format(amount);
 };
