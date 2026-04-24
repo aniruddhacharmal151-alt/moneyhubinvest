@@ -151,6 +151,22 @@
   .delay-1 { animation-delay: .1s; }
 
   .hidden { display: none !important; }
+
+  /* ===== Deposit modal step indicator ===== */
+  .step-dot {
+    width: 1.6rem; height: 1.6rem; border-radius: 9999px;
+    background: #e2e8f0; color: #64748b;
+    display: grid; place-items: center;
+    font-size: .75rem; font-weight: 700;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+  }
+  .step-dot.active { background: #2563eb; color: #fff; transform: scale(1.05); }
+  .step-line { flex: 1; height: 2px; background: #e2e8f0; max-width: 32px; }
+
+  .deposit-amount-pill {
+    background: linear-gradient(135deg, #eff6ff, #ede9fe);
+    border: 1px solid rgba(37,99,235,.15);
+  }
 </style>
 </head>
 <body class="h-full text-slate-800">
@@ -393,21 +409,78 @@
   </div>
 </div>
 
-<!-- DEPOSIT MODAL -->
+<!-- DEPOSIT MODAL — 3-step UPI flow (Pay → Confirm → UTR) -->
 <div id="deposit-modal" class="hidden fixed inset-0 z-50 bg-black/45 backdrop-blur-sm flex items-center justify-center p-4">
-  <div class="w-full max-w-lg glass rounded-2xl p-5 space-y-4 bg-white">
+  <div class="w-full max-w-md glass rounded-2xl p-5 space-y-4 bg-white">
+
+    <!-- Header -->
     <div class="flex items-center justify-between">
       <h3 class="text-xl font-bold">Manual UPI Deposit</h3>
-      <button onclick="closeModal('deposit')" class="text-slate-500 hover:text-slate-800">✕</button>
+      <button onclick="closeModal('deposit')" class="text-slate-500 hover:text-slate-800" aria-label="Close">✕</button>
     </div>
+
+    <!-- Plan summary (always visible) -->
     <div id="deposit-plan-summary" class="text-sm text-slate-600"></div>
-    <input id="manual-deposit-amount" type="number" placeholder="Amount (₹)"
-      class="w-full px-3 py-2 border rounded-xl" />
-    <input id="manual-deposit-utr" type="text" placeholder="UTR Number"
-      class="w-full px-3 py-2 border rounded-xl" />
-    <button onclick="submitDepositRequest(event)"
-      class="w-full bg-violet-600 text-white py-2 rounded-xl btn-premium">Submit</button>
-    <div id="deposit-msg" class="text-sm"></div>
+
+    <!-- Step indicator -->
+    <div class="flex items-center justify-center gap-2">
+      <span id="step-dot-1" class="step-dot active">1</span>
+      <span class="step-line"></span>
+      <span id="step-dot-2" class="step-dot">2</span>
+      <span class="step-line"></span>
+      <span id="step-dot-3" class="step-dot">3</span>
+    </div>
+
+    <!-- Hidden field that holds the locked amount -->
+    <input id="manual-deposit-amount" type="hidden" />
+
+    <!-- STEP 1: Show amount + Pay Now -->
+    <div id="deposit-step-1" class="space-y-3">
+      <div class="deposit-amount-pill rounded-xl p-4 text-center">
+        <div class="text-xs uppercase tracking-wide text-slate-500">You will pay</div>
+        <div class="text-3xl font-extrabold text-blue-700 mt-1">
+          ₹<span id="deposit-amount-display">0</span>
+        </div>
+      </div>
+      <button type="button" onclick="payNow()"
+        class="w-full bg-emerald-600 text-white py-3 rounded-xl btn-premium font-semibold">
+        Pay Now via UPI
+      </button>
+      <p class="text-xs text-slate-500 text-center">
+        You'll be redirected to your UPI app (PhonePe, GPay, Paytm, etc.).
+      </p>
+    </div>
+
+    <!-- STEP 2: Confirm payment was completed -->
+    <div id="deposit-step-2" class="hidden space-y-3">
+      <div class="rounded-xl border bg-amber-50 text-amber-800 text-sm p-3">
+        Finish the payment in your UPI app, then come back and tap below.
+      </div>
+      <button type="button" onclick="markPaymentDone()"
+        class="w-full bg-blue-600 text-white py-3 rounded-xl btn-premium font-semibold">
+        I have completed payment
+      </button>
+      <button type="button" onclick="payNow()"
+        class="w-full border py-2 rounded-xl text-sm text-slate-600">
+        Open UPI app again
+      </button>
+    </div>
+
+    <!-- STEP 3: Submit UTR -->
+    <div id="deposit-step-3" class="hidden space-y-3">
+      <label for="manual-deposit-utr" class="block text-sm text-slate-600">
+        Enter the 12-digit UTR / Transaction ID from your UPI app:
+      </label>
+      <input id="manual-deposit-utr" type="text" inputmode="numeric"
+        autocomplete="off" placeholder="e.g. 412345678901"
+        class="w-full px-3 py-2 border rounded-xl tracking-wider" />
+      <button type="button" onclick="submitDepositRequest(event)"
+        class="w-full bg-violet-600 text-white py-3 rounded-xl btn-premium font-semibold">
+        Submit Deposit Request
+      </button>
+    </div>
+
+    <div id="deposit-msg" class="text-sm text-center"></div>
   </div>
 </div>
 
@@ -501,19 +574,82 @@ function loadMorePlans(type) {
   renderPlans(type);
 }
 
-/* ===== FIX #8: openDepositModal ===== */
+/* ===== DEPOSIT FLOW (3 steps: Pay → Confirm → UTR) ===== */
+
+// Globally selected plan (used by every step of the deposit popup)
+window.selectedDeposit = { plan: null, name: "", amount: 0 };
+
+// Your UPI receiver ID (change this when you go live)
+const DEPOSIT_UPI_ID   = "razerpay@upi";
+const DEPOSIT_UPI_NAME = "MySite";
+
 function openDepositModal(planId) {
   const plan = plans.find(p => p.id === planId);
   if (!plan) return;
+
+  // 1) Store selection globally so every step has access to it
+  window.selectedDeposit = {
+    plan,
+    name: plan.name,
+    amount: Number(plan.amount)
+  };
+
+  // 2) Render plan summary
   document.getElementById("deposit-plan-summary").innerHTML = `
-    <div class="glass rounded-xl p-3">
-      <p class="font-semibold">${plan.name}</p>
-      <p>Amount: ₹${plan.amount.toLocaleString()}</p>
-      <p>Duration: ${plan.days} days</p>
-      <p>Total Return: ₹${plan.totalReturn.toLocaleString()}</p>
+    <div class="rounded-xl border bg-slate-50 p-3">
+      <div class="flex items-center justify-between">
+        <div class="font-semibold">${plan.name}</div>
+        <div class="text-xs text-slate-500">${plan.days} days</div>
+      </div>
+      <div class="text-xs text-slate-600 mt-1">
+        Total Return: ₹${plan.totalReturn.toLocaleString()}
+      </div>
     </div>`;
+
+  // 3) Display amount inside popup + lock the hidden input
   document.getElementById("manual-deposit-amount").value = plan.amount;
+  document.getElementById("deposit-amount-display").textContent =
+    plan.amount.toLocaleString("en-IN");
+
+  // 4) Reset transient state and start at step 1
+  document.getElementById("manual-deposit-utr").value = "";
+  document.getElementById("deposit-msg").textContent  = "";
+  setDepositStep(1);
+
   openModal("deposit");
+}
+
+function setDepositStep(step) {
+  for (let i = 1; i <= 3; i++) {
+    document.getElementById("deposit-step-" + i).classList.toggle("hidden", i !== step);
+    document.getElementById("step-dot-"     + i).classList.toggle("active", i <= step);
+  }
+}
+
+// STEP 1 → opens UPI app, then advances to STEP 2
+function payNow() {
+  const amount = window.selectedDeposit.amount;
+  if (!amount || amount <= 0) {
+    document.getElementById("deposit-msg").textContent = "No plan selected.";
+    return;
+  }
+  const upiUrl =
+    `upi://pay?pa=${encodeURIComponent(DEPOSIT_UPI_ID)}` +
+    `&pn=${encodeURIComponent(DEPOSIT_UPI_NAME)}` +
+    `&am=${encodeURIComponent(amount)}` +
+    `&cu=INR`;
+
+  // Trigger the UPI deep link
+  window.location.href = upiUrl;
+
+  // Advance to step 2 so the user sees "I have completed payment" on return
+  setTimeout(() => setDepositStep(2), 500);
+}
+
+// STEP 2 → user confirms they paid, reveal UTR field
+function markPaymentDone() {
+  setDepositStep(3);
+  setTimeout(() => document.getElementById("manual-deposit-utr")?.focus(), 50);
 }
 
 /* ===== MODAL ===== */
@@ -658,23 +794,45 @@ async function handleWithdraw(e) {
   msg.textContent = error ? "Error: " + error.message : "✅ Withdraw request submitted!";
 }
 
-/* ===== DEPOSIT SUBMIT ===== */
+/* ===== DEPOSIT SUBMIT (Step 3) ===== */
 async function submitDepositRequest(e) {
-  e.preventDefault();
-  const amount = document.getElementById("manual-deposit-amount").value;
-  const utr    = document.getElementById("manual-deposit-utr").value;
-  const msg    = document.getElementById("deposit-msg");
+  if (e && e.preventDefault) e.preventDefault();
 
-  if (!amount || !utr) { msg.textContent = "Please fill all fields."; return; }
-  if (!currentUser)    { msg.textContent = "Not logged in."; return; }
+  const msg      = document.getElementById("deposit-msg");
+  const amount   = Number(window.selectedDeposit.amount
+                   || document.getElementById("manual-deposit-amount").value);
+  const utr      = document.getElementById("manual-deposit-utr").value.trim();
+  const planName = window.selectedDeposit.name || "";
+
+  msg.textContent = "";
+
+  if (!currentUser)              { msg.textContent = "Not logged in.";              return; }
+  if (!amount || amount <= 0)    { msg.textContent = "Invalid amount.";             return; }
+  if (!utr || utr.length < 10)   { msg.textContent = "Please enter a valid UTR (min 10 digits)."; return; }
 
   msg.textContent = "Submitting…";
 
-  const { error } = await supabaseClient.from("deposits").insert([{
-    user_id: currentUser.id, amount: Number(amount), utr_number: utr, status: "pending"
-  }]);
+  // Base payload (always required)
+  const payload = {
+    user_id:    currentUser.id,
+    amount,
+    utr_number: utr,
+    status:     "pending",
+    plan_name:  planName || null
+  };
 
-  msg.textContent = error ? "Error: " + error.message : "✅ Deposit request submitted! We'll verify shortly.";
+  let { error } = await supabaseClient.from("deposits").insert([payload]);
+
+  // If `plan_name` column doesn't exist on the table, retry without it
+  if (error && /plan_name/i.test(error.message || "")) {
+    delete payload.plan_name;
+    ({ error } = await supabaseClient.from("deposits").insert([payload]));
+  }
+
+  if (error) { msg.textContent = "Error: " + error.message; return; }
+
+  msg.textContent = "✅ Deposit request submitted! We'll verify shortly.";
+  setTimeout(() => closeModal("deposit"), 1500);
 }
 
 /* ===== FIX #13: updateProfileEmail / updateProfilePassword ===== */
