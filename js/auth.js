@@ -1,13 +1,21 @@
 const { createClient } = supabase;
-window.supabaseClient = createClient("https://vwsbxvpghoolfqyxyovf.supabase.co", "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK");
+
+window.supabaseClient = createClient(
+  "https://vwsbxvpghoolfqyxyovf.supabase.co",
+  "sb_publishable_ZJcZG3Eg1glLZ1dZp90i-g_vSlo1HKK"
+);
 
 window.currentUser = null;
 window.authMode = "login";
-window.visiblePublicPlans = 3;
-window.visiblePrivatePlans = 3;
+
+window.visiblePublicPlans = 6;   // better UX
+window.visiblePrivatePlans = 4;  // better UX
+
 window.selectedPlan = null;
 window.countdownTimer = null;
+
 window.latestInvestments = [];
+window.latestDepositRequests = []; // keep this (important)
 
 window.toggleAuthMode = function toggleAuthMode() {
   window.authMode = window.authMode === "login" ? "signup" : "login";
@@ -29,8 +37,8 @@ window.submitAuth = async function submitAuth(e) {
     : await window.supabaseClient.auth.signUp({ email, password });
 
   if (res.error) return alert(res.error.message);
-  window.closeModal?.("auth");
-  window.navigate?.("home");
+window.closeModal("auth");
+window.navigate("home");
 };
 
 window.logout = async function logout() {
@@ -64,10 +72,16 @@ window.updateProfilePassword = async function updateProfilePassword(e) {
 
 window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
   window.currentUser = session?.user || null;
-  document.getElementById("public-view").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("dashboardSection").classList.toggle("hidden", !window.currentUser);
-  document.getElementById("guest-actions").classList.toggle("hidden", !!window.currentUser);
-  document.getElementById("userMenu")?.classList.toggle("hidden", !window.currentUser);
+const isLoggedIn = !!window.currentUser;
+
+document.getElementById("public-view")?.classList.toggle("hidden", isLoggedIn);
+document.getElementById("dashboard-view")?.classList.toggle("hidden", !isLoggedIn);
+document.getElementById("guest-actions")?.classList.toggle("hidden", isLoggedIn);
+document.getElementById("user-menu")?.classList.toggle("hidden", !isLoggedIn);
+
+if (isLoggedIn) {
+  window.navigate("home");
+}
 
   if (window.currentUser) {
     document.getElementById("loginBtn")?.classList.add("hidden");
@@ -82,15 +96,15 @@ window.supabaseClient.auth.onAuthStateChange(async (_, session) => {
     await window.loadWallet();
     await window.fetchInvestments();
     window.attachPlanButtons?.();
-    window.showSection?.("homeSection");
-    window.navigate?.("home");
+window.showSection?.("home");
+window.navigate("home");
   } else {
     document.getElementById("loginBtn")?.classList.remove("hidden");
     document.getElementById("signupBtn")?.classList.remove("hidden");
     document.body.classList.remove("mobile-dashboard");
-    window.closeAllNavPopovers?.();
-    window.closeLogoutModal?.();
-    window.renderPlans?.();
+window.closeAllNavPopovers();
+window.closeLogoutModal();
+window.renderPlans();
     if (window.countdownTimer) clearInterval(window.countdownTimer);
   }
 });
