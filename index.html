@@ -403,6 +403,19 @@
       <button id="auth-submit" type="submit"
         class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium">Login</button>
     </form>
+    <form id="otp-form" onsubmit="verifyOtp(event)" class="space-y-3 hidden">
+      <p id="otp-info" class="text-sm text-slate-600">
+        We sent a 6-digit code to your email. Enter it below to confirm.
+      </p>
+      <input id="otp-code" type="text" inputmode="numeric" autocomplete="one-time-code"
+        pattern="[0-9]*" maxlength="6" required placeholder="Enter OTP"
+        class="w-full px-3 py-2 rounded-xl border tracking-widest text-center" />
+      <button id="otp-submit" type="submit"
+        class="w-full rounded-xl bg-blue-600 text-white py-2 btn-premium">Verify OTP</button>
+      <button type="button" onclick="cancelOtp()" class="w-full text-slate-500 text-sm">
+        Use a different email
+      </button>
+    </form>
     <button id="auth-switch" onclick="toggleAuthMode()" class="text-blue-700 text-sm">
       Need account? Sign Up
     </button>
@@ -714,6 +727,8 @@ function updateAuthModal() {
     : "Already have an account? Login";
 }
 
+let pendingSignupEmail = null;
+
 async function submitAuth(e) {
   e.preventDefault();
   const email    = document.getElementById("auth-email").value;
@@ -722,38 +737,88 @@ async function submitAuth(e) {
   btn.textContent = "Please wait…";
   btn.disabled    = true;
 
-  let res;
   if (authMode === "login") {
-    res = await supabaseClient.auth.signInWithPassword({ email, password });
-  } else {
-    const { data: existing, error: lookupError } = await supabaseClient
-      .from("profiles")
-      .select("id")
-      .eq("email", email)
-      .maybeSingle();
-
-    if (lookupError) {
-      btn.disabled = false;
-      updateAuthModal();
-      alert(lookupError.message);
-      return;
-    }
-
-    if (existing) {
-      btn.disabled = false;
-      updateAuthModal();
-      alert("User already exists, please login");
-      return;
-    }
-
-    res = await supabaseClient.auth.signInWithOtp({ email });
+    const res = await supabaseClient.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    updateAuthModal();
+    if (res.error) { alert(res.error.message); return; }
+    closeModal("auth");
+    return;
   }
 
+  const { data: existing, error: lookupError } = await supabaseClient
+    .from("profiles")
+    .select("id")
+    .eq("email", email)
+    .maybeSingle();
+
+  if (lookupError) {
+    btn.disabled = false;
+    updateAuthModal();
+    alert(lookupError.message);
+    return;
+  }
+
+  if (existing) {
+    btn.disabled = false;
+    updateAuthModal();
+    alert("User already exists, please login");
+    return;
+  }
+
+  const res = await supabaseClient.auth.signInWithOtp({ email });
   btn.disabled = false;
   updateAuthModal();
 
   if (res.error) { alert(res.error.message); return; }
+
+  pendingSignupEmail = email;
+  document.getElementById("auth-form").classList.add("hidden");
+  document.getElementById("auth-switch").classList.add("hidden");
+  document.getElementById("otp-form").classList.remove("hidden");
+  document.getElementById("auth-title").textContent = "Confirm OTP";
+  document.getElementById("otp-code").value = "";
+  document.getElementById("otp-code").focus();
+}
+
+async function verifyOtp(e) {
+  e.preventDefault();
+  const token = document.getElementById("otp-code").value.trim();
+  const btn   = document.getElementById("otp-submit");
+
+  if (!pendingSignupEmail) { alert("Please request a new OTP."); return; }
+  if (!/^\d{6}$/.test(token)) { alert("Enter the 6-digit OTP."); return; }
+
+  btn.textContent = "Verifying…";
+  btn.disabled    = true;
+
+  const res = await supabaseClient.auth.verifyOtp({
+    email: pendingSignupEmail,
+    token,
+    type: "email",
+  });
+
+  btn.disabled    = false;
+  btn.textContent = "Verify OTP";
+
+  if (res.error) { alert(res.error.message); return; }
+
+  pendingSignupEmail = null;
+  resetAuthModal();
   closeModal("auth");
+}
+
+function cancelOtp() {
+  pendingSignupEmail = null;
+  resetAuthModal();
+}
+
+function resetAuthModal() {
+  document.getElementById("otp-form").classList.add("hidden");
+  document.getElementById("otp-code").value = "";
+  document.getElementById("auth-form").classList.remove("hidden");
+  document.getElementById("auth-switch").classList.remove("hidden");
+  updateAuthModal();
 }
 
 /* ===== FIX #16: onAuthStateChange updates the UI ===== */
