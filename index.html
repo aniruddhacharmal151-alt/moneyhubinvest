@@ -722,9 +722,32 @@ async function submitAuth(e) {
   btn.textContent = "Please wait…";
   btn.disabled    = true;
 
-  const res = authMode === "login"
-    ? await supabaseClient.auth.signInWithPassword({ email, password })
-    : await supabaseClient.auth.signUp({ email, password });
+  let res;
+  if (authMode === "login") {
+    res = await supabaseClient.auth.signInWithPassword({ email, password });
+  } else {
+    const { data: existing, error: lookupError } = await supabaseClient
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .maybeSingle();
+
+    if (lookupError) {
+      btn.disabled = false;
+      updateAuthModal();
+      alert(lookupError.message);
+      return;
+    }
+
+    if (existing) {
+      btn.disabled = false;
+      updateAuthModal();
+      alert("User already exists, please login");
+      return;
+    }
+
+    res = await supabaseClient.auth.signInWithOtp({ email });
+  }
 
   btn.disabled = false;
   updateAuthModal();
